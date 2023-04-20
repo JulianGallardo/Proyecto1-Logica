@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
-import { joinResult } from './util';
+import { joinResult, valueInPos } from './util';
+import Marker from './marker';
 
 let pengine;
 
@@ -13,6 +14,7 @@ function Game() {
   const [score, setScore] = useState(0);
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
+  const [newBlockValue, setValue] =useState(1);
 
   useEffect(() => {
     // This is executed just once, after the first render.
@@ -41,8 +43,27 @@ function Game() {
     if (waiting) {
       return;
     }
+    actualizarValorNuevoBloque(newPath);
     setPath(newPath);
+    
+
     console.log(JSON.stringify(newPath));
+  }
+
+/**
+ * Actualiza el valor del nuevo bloque a generarse segun el camino.
+ */
+  function actualizarValorNuevoBloque(newPath){ 
+    if(newPath.length!==0){
+      var newBlockScore= valueInPos(newPath[0],grid,numOfColumns);
+      if(newPath.length>1){
+        for(var i=1;i<newPath.length;i++){
+          newBlockScore=newBlockScore*2;
+        }
+      }
+      
+      setValue(newBlockScore);
+    }
   }
 
   /**
@@ -102,8 +123,12 @@ function Game() {
   }
   return (
     <div className="game">
-      <div className="header">
-        <div className="score">{score}</div>
+      <div className='header'>
+        <Marker
+          score={score}
+          path={path}
+          newBlockValue={newBlockValue}
+        />
       </div>
       <Board
         grid={grid}

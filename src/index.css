@@ -20,6 +20,14 @@ body {
 .score {
   margin: 10px;
   font-size: 25px;
+  text-align: center;
+}
+
+
+.squareToPut .square{
+  height: 80px;
+  width: 80px;
+  color:white;
 }
 
 .board {
