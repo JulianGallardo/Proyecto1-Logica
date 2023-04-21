@@ -55,13 +55,7 @@ function Game() {
  */
   function actualizarValorNuevoBloque(newPath){ 
     if(newPath.length!==0){
-      var newBlockScore= valueInPos(newPath[0],grid,numOfColumns);
-      if(newPath.length>1){
-        for(var i=1;i<newPath.length;i++){
-          newBlockScore=newBlockScore*2;
-        }
-      }
-      
+      var newBlockScore=joinResult(newPath, grid, numOfColumns);
       setValue(newBlockScore);
     }
   }
