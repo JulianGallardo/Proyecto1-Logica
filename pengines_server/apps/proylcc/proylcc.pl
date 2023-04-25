@@ -34,3 +34,8 @@ calcularSuma(Grid, NumOfColumns, [X|Xs], Res) :- calcularSuma(Grid, NumOfColumns
 
 calcularProximaPotencia(X, Y, Res) :- X>(2**Y), Y2 is Y+1, calcularProximaPotencia(X, Y2, Res).
 calcularProximaPotencia(X, Y, Res) :- X=<(2**Y), Res is 2**Y.
+
+bajarColumnas(Grid,[X],NumOfColumns,GridRes, Posicion):- X = 0, PosicionAux is Posicion-5, buscarElementoI(Grid, PosicionAux, Res), reemplazarElementoI(Grid, Posicion, Res, GridRes).
+bajarColumnas(Grid,[X],NumOfColumns,Grid, Posicion):- X\=0.
+bajarColumnas(Grid,[X|Xs],NumOfColumns,GridRes, Posicion):-bajarColumnas(Xs,NumOfColumns,GridAux, PosicionAux), Posicion is PosicionAux-1, X = 0, Posicion2 is Posicion-5, buscarElementoI(Grid, Posicion2, Res), reemplazarElementoI(GridAux, Posicion, Res, GridRes).
+bajarColumnas(Grid,[X|Xs],NumOfColumns,GridAux, Posicion):-bajarColumnas(Xs,NumOfColumns,GridAux, PosicionAux), X \= 0. 
