@@ -35,7 +35,14 @@ calcularSuma(Grid, NumOfColumns, [X|Xs], Res) :- calcularSuma(Grid, NumOfColumns
 calcularProximaPotencia(X, Y, Res) :- X>(2**Y), Y2 is Y+1, calcularProximaPotencia(X, Y2, Res).
 calcularProximaPotencia(X, Y, Res) :- X=<(2**Y), Res is 2**Y.
 
-bajarColumnas(Grid,[X],NumOfColumns,GridRes, Posicion):- X = 0, PosicionAux is Posicion-5, buscarElementoI(Grid, PosicionAux, Res), reemplazarElementoI(Grid, Posicion, Res, GridRes).
-bajarColumnas(Grid,[X],NumOfColumns,Grid, Posicion):- X\=0.
-bajarColumnas(Grid,[X|Xs],NumOfColumns,GridRes, Posicion):-bajarColumnas(Xs,NumOfColumns,GridAux, PosicionAux), Posicion is PosicionAux-1, X = 0, Posicion2 is Posicion-5, buscarElementoI(Grid, Posicion2, Res), reemplazarElementoI(GridAux, Posicion, Res, GridRes).
-bajarColumnas(Grid,[X|Xs],NumOfColumns,GridAux, Posicion):-bajarColumnas(Xs,NumOfColumns,GridAux, PosicionAux), X \= 0. 
+bajarColumnas(Grid,[X],NumOfColumns,GridRes, Posicion):- X = 0, Posicion is 10, PosicionAux is Posicion-5, buscarElementoI(Grid, PosicionAux, Res), reemplazarElementoI(Grid, Posicion, Res, GridRes).
+bajarColumnas(Grid,[X],NumOfColumns,Grid, Posicion):- X\=0, Posicion is 10.
+bajarColumnas(Grid,[X|Xs],NumOfColumns,GridRes, Posicion):-bajarColumnas(Grid, Xs,NumOfColumns,GridAux, PosicionAux), Posicion is PosicionAux-1, X = 0, Posicion2 is Posicion-5, Posicion2>=0, buscarElementoI(Grid, Posicion2, Res), reemplazarElementoI(GridAux, Posicion, Res, GridRes).
+bajarColumnas(Grid,[X|Xs],NumOfColumns,GridRes, Posicion):-bajarColumnas(Grid, Xs,NumOfColumns,GridAux, PosicionAux), Posicion is PosicionAux-1, X = 0, Posicion2 is Posicion-5, Posicion2<0, generarPotencia2Random(Res), reemplazarElementoI(GridAux, Posicion, Res, GridRes).
+bajarColumnas(Grid,[X|Xs],NumOfColumns,GridAux, Posicion):-bajarColumnas(Grid, Xs,NumOfColumns,GridAux, PosicionAux), X \= 0. 
+
+generarPotencia2Random(Potencia) :- random(Rand), Exponente is floor(log(Rand)/log(2)), Potencia is 2^Exponente.
+
+poner todos los 0 en una lista de posiciones
+por cada posicion de la lista hacer un repeat until haya un numero valido que sacar de arriba
+
