@@ -39,7 +39,9 @@ calcularProximaPotencia(X, Y, Res) :- X=<(2**Y), Res is 2**Y.
 
 
 
-generarPotencia2Random(Potencia) :- random(Rand), Exponente is floor(log(Rand)/log(2)), Potencia is 2^Exponente.
+generarPotencia2Random(Resultado) :-
+    random(1, 9, Exponente),  % Genera un exponente aleatorio entre 1 y 9
+    Resultado is 2 ** Exponente,Resultado>=2.
 
 sacarIColumna([X], X).
 sacarIColumna([_X|Xs], Res) :- sacarIColumna(Xs, Res).
