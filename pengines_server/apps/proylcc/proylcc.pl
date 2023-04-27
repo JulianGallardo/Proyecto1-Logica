@@ -36,12 +36,9 @@ calcularSuma(Grid, NumOfColumns, [X|Xs], Res) :- calcularSuma(Grid, NumOfColumns
 calcularProximaPotencia(X, Y, Res) :- X>(2**Y), Y2 is Y+1, calcularProximaPotencia(X, Y2, Res).
 calcularProximaPotencia(X, Y, Res) :- X=<(2**Y), Res is 2**Y.
 
-
-
-
 generarPotencia2Random(Resultado) :-
     random(1, 9, Exponente),  % Genera un exponente aleatorio entre 1 y 9
-    Resultado is 2 ** Exponente,Resultado>=2.
+    Resultado is 2 ** Exponente.
 
 sacarIColumna([X], X).
 sacarIColumna([_X|Xs], Res) :- sacarIColumna(Xs, Res).
