@@ -78,35 +78,46 @@ reemplazarPorPotencias([X|Xs], [Y|Res]) :- X=0, generarPotencia2Random(Y), reemp
 
 
 
-filaPos(Pos,0):-Pos<5.
+filaPos(Pos,0):-Pos<5,Pos>=0.
 filaPos(Pos,ResFila):-PosAux is Pos-5,Pos>=0,filaPos(PosAux,ResAux),ResFila is ResAux+1.
 
-mismaFila(Pos1,Pos2):-filaPos(Pos1,Res1),filaPos(Pos2,Res2),Res1=:=Res2.
+calcularFila(Pos1,Fila1,Pos2,Fila2):-filaPos(Pos1,Fila1),filaPos(Pos2,Fila2).
+
+mismaFila(Pos1,Pos2):-calcularFila(Pos1,Fila1,Pos2,Fila2),Fila1 =:= Fila2.
+
+
 
 filaAbajo(Pos1,Pos2) :-filaPos(Pos1,Res1),filaPos(Pos2,Res2),Res2 is Res1+1.
 
 filaArriba(Pos1,Pos2) :-filaPos(Pos1,Res1),filaPos(Pos2,Res2),Res2 is Res1-1.
 
-adyacenteArriba(Grid,Elemento, Pos, PosAux) :- PosAux is Pos-5, PosAux>=0, nth0(PosAux, Grid, Achequear), Elemento=:=Achequear.
-adyacenteArriba(Grid, Elemento, Pos, []).
+adyacenteArriba(Grid,Elemento, Pos,Lista,ListaProcesada) :- PosAux is Pos-5, PosAux>=0,not(member(PosAux,Lista)),nth0(PosAux, Grid, Achequear), Elemento=:=Achequear,adyacentes(Grid,Elemento,PosAux,[PosAux|Lista],ListaProcesada).
+adyacenteArriba(_Grid, _Elemento, _Pos,Lista,Lista).
 
-adyacenteAbajo(Grid,Elemento,Pos,PosAux):-PosAux is Pos+5,PosAux<40,nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
-adyacenteAbajo(Grid,Elemento,Pos,[]).
+adyacenteAbajo(Grid,Elemento, Pos,Lista,ListaProcesada):-PosAux is Pos+5,PosAux<40,not(member(PosAux,Lista)),nth0(PosAux,Grid,Achequear),Elemento=:=Achequear,adyacentes(Grid,Elemento,PosAux,[PosAux|Lista],ListaProcesada).
+adyacenteAbajo(_Grid, _Elemento, _Pos,Lista,Lista).
 
-adyacenteIzquierda(Grid,Elemento,Pos,PosAux):-PosAux is Pos-1,PosAux>=0, mismaFila(Pos, PosAux), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
-adyacenteIzquierda(Grid,Elemento,Pos,[]).
+adyacenteIzquierda(Grid,Elemento, Pos,Lista,ListaProcesada):-PosAux is Pos-1,PosAux>=0,not(member(PosAux,Lista)),  nth0(PosAux,Grid,Achequear),Elemento=:=Achequear,mismaFila(Pos, PosAux),adyacentes(Grid,Elemento,PosAux,[PosAux|Lista],ListaProcesada).
+adyacenteIzquierda(_Grid, _Elemento, _Pos,Lista,Lista).
 
-adyacenteDerecha(Grid,Elemento,Pos,PosAux):-PosAux is Pos+1,PosAux<40, mismaFila(Pos, PosAux), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
-adyacenteDerecha(Grid,Elemento,Pos,[]).
+adyacenteDerecha(Grid,Elemento, Pos,Lista,ListaProcesada):-PosAux is Pos+1,PosAux<40,not(member(PosAux,Lista)),  nth0(PosAux,Grid,Achequear),Elemento=:=Achequear,mismaFila(Pos, PosAux),adyacentes(Grid,Elemento,PosAux,[PosAux|Lista],ListaProcesada).
+adyacenteDerecha(_Grid, _Elemento, _Pos,Lista,Lista).
 
-adyacenteIzquierdaAbajo(Grid,Elemento,Pos,PosAux) :-PosAux is Pos+4, PosAux<40, filaAbajo(Pos,PosAux), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
-adyacenteIzquierdaAbajo(Grid,Elemento,Pos,[]).
+adyacenteIzquierdaAbajo(Grid,Elemento, Pos,Lista,ListaProcesada) :-PosAux is Pos+4, PosAux<40,not(member(PosAux,Lista)), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear, filaAbajo(Pos,PosAux),adyacentes(Grid,Elemento,PosAux,[PosAux|Lista],ListaProcesada).
+adyacenteIzquierdaAbajo(_Grid, _Elemento, _Pos,Lista,Lista).
 
-adyacenteIzquierdaArriba(Grid,Elemento,Pos,PosAux) :- PosAux is Pos-6, PosAux>=0, filaArriba(Pos, PosAux), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
-adyacenteIzquierdaArriba(Grid,Elemento,Pos,[]).
+adyacenteIzquierdaArriba(Grid,Elemento, Pos,Lista,ListaProcesada) :- PosAux is Pos-6, PosAux>=0,not(member(PosAux,Lista)), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear, filaArriba(Pos, PosAux),adyacentes(Grid,Elemento,PosAux,[PosAux|Lista],ListaProcesada).
+adyacenteIzquierdaArriba(_Grid, _Elemento, _Pos,Lista,Lista).
 
-adyacenteDerechaAbajo(Grid,Elemento,Pos,PosAux) :- PosAux is Pos+6,PosAux<40, filaAbajo(Pos,PosAux),nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
-adyacenteDerechaAbajo(Grid,Elemento,Pos,[]).
+adyacenteDerechaAbajo(Grid,Elemento, Pos,Lista,ListaProcesada) :- PosAux is Pos+6,PosAux<40,not(member(PosAux,Lista)),nth0(PosAux,Grid,Achequear),Elemento=:=Achequear, filaAbajo(Pos,PosAux),adyacentes(Grid,Elemento,PosAux,[PosAux|Lista],ListaProcesada).
+adyacenteDerechaAbajo(_Grid, _Elemento, _Pos,Lista,Lista).
 
-adyacenteDerechaArriba(Grid,Elemento,Pos,PosAux) :- PosAux is Pos-4,PosAux>0, filaArriba(Pos, PosAux), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
-adyacenteDerechaArriba(Grid,Elemento,Pos,[]).
+adyacenteDerechaArriba(Grid,Elemento, Pos,Lista,ListaProcesada) :- PosAux is Pos-4,PosAux>0,not(member(PosAux,Lista)), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear,filaArriba(Pos, PosAux),adyacentes(Grid,Elemento,PosAux,[PosAux|Lista],ListaProcesada).
+adyacenteDerechaArriba(_Grid, _Elemento, _Pos,Lista,Lista).
+
+adyacentes(Grid, ElemInPos, Pos,Lista, ListaRes8) :-
+    adyacenteDerechaAbajo(Grid, ElemInPos, Pos,Lista,ListaRes1),adyacenteAbajo(Grid,ElemInPos,Pos,ListaRes1,ListaRes2),adyacenteIzquierdaAbajo(Grid, ElemInPos, Pos, ListaRes2,ListaRes3),
+    adyacenteDerecha(Grid, ElemInPos, Pos, ListaRes3,ListaRes4), adyacenteIzquierda(Grid, ElemInPos, Pos, ListaRes4,ListaRes5),
+    adyacenteDerechaArriba(Grid, ElemInPos, Pos,ListaRes5,ListaRes6),adyacenteArriba(Grid, ElemInPos, Pos, ListaRes6,ListaRes7),adyacenteIzquierdaArriba(Grid, ElemInPos, Pos,ListaRes7,ListaRes8).
+    
+sacarGrupo(Grid,Pos,Res):-nth0(Pos,Grid,ElemInPos),adyacentes(Grid,ElemInPos,Pos,[],Res).
