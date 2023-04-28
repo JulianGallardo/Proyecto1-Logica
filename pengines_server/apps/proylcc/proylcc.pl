@@ -72,3 +72,41 @@ reemplazarPorPotencias([X], [X]) :- X\=0.
 reemplazarPorPotencias([X], [Res]) :- X=0, generarPotencia2Random(Res).
 reemplazarPorPotencias([X|Xs], [X|Res]) :- X\=0, reemplazarPorPotencias(Xs, Res).
 reemplazarPorPotencias([X|Xs], [Y|Res]) :- X=0, generarPotencia2Random(Y), reemplazarPorPotencias(Xs, Res).
+
+
+%Empieza_el_booster
+
+
+
+filaPos(Pos,0):-Pos<5.
+filaPos(Pos,ResFila):-PosAux is Pos-5,Pos>=0,filaPos(PosAux,ResAux),ResFila is ResAux+1.
+
+mismaFila(Pos1,Pos2):-filaPos(Pos1,Res1),filaPos(Pos2,Res2),Res1=:=Res2.
+
+filaAbajo(Pos1,Pos2) :-filaPos(Pos1,Res1),filaPos(Pos2,Res2),Res2 is Res1+1.
+
+filaArriba(Pos1,Pos2) :-filaPos(Pos1,Res1),filaPos(Pos2,Res2),Res2 is Res1-1.
+
+adyacenteArriba(Grid,Elemento, Pos, PosAux) :- PosAux is Pos-5, PosAux>=0, nth0(PosAux, Grid, Achequear), Elemento=:=Achequear.
+adyacenteArriba(Grid, Elemento, Pos, []).
+
+adyacenteAbajo(Grid,Elemento,Pos,PosAux):-PosAux is Pos+5,PosAux<40,nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
+adyacenteAbajo(Grid,Elemento,Pos,[]).
+
+adyacenteIzquierda(Grid,Elemento,Pos,PosAux):-PosAux is Pos-1,PosAux>=0, mismaFila(Pos, PosAux), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
+adyacenteIzquierda(Grid,Elemento,Pos,[]).
+
+adyacenteDerecha(Grid,Elemento,Pos,PosAux):-PosAux is Pos+1,PosAux<40, mismaFila(Pos, PosAux), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
+adyacenteDerecha(Grid,Elemento,Pos,[]).
+
+adyacenteIzquierdaAbajo(Grid,Elemento,Pos,PosAux) :-PosAux is Pos+4, PosAux<40, filaAbajo(Pos,PosAux), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
+adyacenteIzquierdaAbajo(Grid,Elemento,Pos,[]).
+
+adyacenteIzquierdaArriba(Grid,Elemento,Pos,PosAux) :- PosAux is Pos-6, PosAux>=0, filaArriba(Pos, PosAux), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
+adyacenteIzquierdaArriba(Grid,Elemento,Pos,[]).
+
+adyacenteDerechaAbajo(Grid,Elemento,Pos,PosAux) :- PosAux is Pos+6,PosAux<40, filaAbajo(Pos,PosAux),nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
+adyacenteDerechaAbajo(Grid,Elemento,Pos,[]).
+
+adyacenteDerechaArriba(Grid,Elemento,Pos,PosAux) :- PosAux is Pos-4,PosAux>0, filaArriba(Pos, PosAux), nth0(PosAux,Grid,Achequear),Elemento=:=Achequear.
+adyacenteDerechaArriba(Grid,Elemento,Pos,[]).
