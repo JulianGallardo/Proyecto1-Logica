@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
-import { joinResult, valueInPos } from './util';
+import { joinResult} from './util';
 import Marker from './marker';
 
 let pengine;

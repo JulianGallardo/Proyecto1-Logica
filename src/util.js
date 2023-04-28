@@ -6,9 +6,19 @@ export function numberToColor(num) {
         case 16: return "#af4e7a";
         case 32: return "#a63e4a";
         case 64: return "#8d6ebc";
+        case 128: return "#81D5CA";
+        case 256: return "#708AEC"; 
+        case 512: return "#3C58B4"; 
+        case 1024: return "#A83896";
+        case 2048: return "#822B5F"; 
+        case 4096: return "#AC4339"; 
+        case 8192: return "#733826"; 
+        case 16384: return "#256C6F"; 
+        case 32768: return "#2A3E7E"; 
         default: return "black";
     }
 }
+
 
 export const equalPos = (posA, posB) => posA.toString() === posB.toString();
 
