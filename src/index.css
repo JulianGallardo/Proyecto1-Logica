@@ -30,6 +30,19 @@ body {
   color:white;
 }
 
+.botonPowerUp{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-right: 80px;
+}
+
+.botonPowerUp .square{
+  height: 60px;
+  width: 200px;
+}
+
+
 .board {
   margin: 20px;
   position: relative;

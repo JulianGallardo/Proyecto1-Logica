@@ -3,6 +3,7 @@ import PengineClient from './PengineClient';
 import Board from './Board';
 import { joinResult} from './util';
 import Marker from './marker';
+import Button from './Button';
 
 let pengine;
 
@@ -59,6 +60,12 @@ function Game() {
       setValue(newBlockScore);
     }
   }
+
+  function booster(){
+    //Completar cuando este el booster.
+    alert("El boton anda.")
+  }
+
 
   /**
    * Called when the user finished drawing a path in the grid.
@@ -131,7 +138,11 @@ function Game() {
         onPathChange={onPathChange}
         onDone={onPathDone}
       />
+      <Button
+        onClickEvent={booster}
+      />
     </div>
+
   );
 }
 
