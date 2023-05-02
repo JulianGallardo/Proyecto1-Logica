@@ -12,7 +12,7 @@
  */ 
 
  join(Grid, NumOfColumns, Path, RGrids):- calcularSumaPath(Grid, NumOfColumns, Path, Suma), calcularProximaPotencia(Suma, 2, Res), generarLista(Grid, NumOfColumns, Path,Res,GridA),
- gravedad(GridA,GridB),reemplazarPorPotencias(GridB,GridC), RGrids = [GridA,GridB,GridC].
+ grillasConGravedad(GridA,[GridA],ListaResultante),RGrids = ListaResultante.
 
 
 /**
@@ -89,56 +89,61 @@ sacarColumnaI([X], Contador, Numero, NumMod, Res) :- Numero =:= Contador mod Num
 sacarColumnaI([X|Xs], Contador, Numero, NumMod, [X|ResAux]) :-  Numero =:= Contador mod NumMod, Contador2 is Contador+1, sacarColumnaI(Xs, Contador2, Numero, NumMod, ResAux).
 sacarColumnaI([_|Xs], Contador, Numero, NumMod, Res) :-  Numero =\= Contador mod NumMod, Contador2 is Contador+1, sacarColumnaI(Xs, Contador2, Numero, NumMod, Res).
 
+
 /**
- * sacarDistintos0()
+ * borrarElemento(+Lista,+Pos,-ListaRes)
+ * ListaRes es la lista con el elemento en el indice Pos eliminado. 
+ * El tamaño de ListaRes es la longitud de Lista menos 1.
+ **/
+borrarElemento([_X|Xs], 0, Xs).
+borrarElemento([X|Xs], Y, [X|Res]):- YAux is Y-1, borrarElemento(Xs, YAux, Res).
+
+ultimaAparicion0(Lista, UltimaAparicion) :-
+    reverse(Lista, Reversa),           % invertir la lista
+    append(_, [0|Resto], Reversa),     % buscar la última aparición de 0 en la lista invertida
+    length(Resto, LongitudResto),      % obtener la longitud de la parte de la lista que sigue a la última aparición
+    UltimaAparicion is LongitudResto.
+
+
+/**
+ * reemplazar0(+Lista,-ListaProcesada)
+ * ListaProcesada es la Lista con la ultima aparicion de 0 borrada y reemplazado por una potencia de 2 al principio de la lista.
+ **/
+reemplazar0(Lista,[Pot|Res]):-ultimaAparicion0(Lista,UltimaAparicion),borrarElemento(Lista,UltimaAparicion,Res),generarPotencia2Random(Pot).
+reemplazar0(Lista,Lista).
+
+
+/**
+* ordenarColumnas(+Grid,+Contador,-Res)
+ * Res es una lista con todas las columnas de Grid concatenadas empezando de la 4 hasta la 0.
  * 
  **/
-sacarDistintos0([X], [X]) :- X =\= 0.
-sacarDistintos0([X], []) :- X =:= 0.
-sacarDistintos0([X|Xs], [X|Res]) :- X =\= 0, sacarDistintos0(Xs, Res).
-sacarDistintos0([X|Xs], Res) :- X =:= 0, sacarDistintos0(Xs,Res).
+ordenarColumnas(Grid, 4, Res) :- sacarColumnaI(Grid, 0, 4, 5, ResAux1), reemplazar0(ResAux1,Res).
+ordenarColumnas(Grid, Contador, Res) :- ContadorAux is Contador+1,ordenarColumnas(Grid,ContadorAux,ColumnasOrdenadas),sacarColumnaI(Grid, 0, Contador,5, ResAux1), reemplazar0(ResAux1,ResAux3),append(ResAux3,ColumnasOrdenadas,Res).
+
 
 /**
- * 
- * 
+ * ponerColumnasBien(+ColumnasConcatenadas,+Cont,-Res)
+ * Res es la grilla armada devuelta a partir de agarrar la lista con las columnas concatenadas.
  **/
-poner0Adelante(Lista,0,Lista).
-poner0Adelante(Lista,1,[0|Lista]).
-poner0Adelante(Lista,Cantidad,[0|Res]):-CantidadAux is Cantidad-1,poner0Adelante(Lista,CantidadAux,Res).  
+ponerColumnasBien(ColumnasConcatenadas, 8, Res):-sacarColumnaI(ColumnasConcatenadas,0,8,8,Res).
+ponerColumnasBien(ColumnasConcatenadas, Contador, Res) :- ContadorAux is Contador+1,ponerColumnasBien(ColumnasConcatenadas,ContadorAux,ResAux2),
+ sacarColumnaI(ColumnasConcatenadas, 0, Contador,8, ResAux1), append(ResAux1, ResAux2, Res).
 
 /**
- * 
- * 
- **/
-ordenarColumnas(Grid, 4, Res) :- sacarColumnaI(Grid, 0, 4, 5, ResAux1), sacarDistintos0(ResAux1, ResAux2), length(ResAux1,CantElementos1),
- length(ResAux2,CantElementos2), Cantidad0 is CantElementos1-CantElementos2, poner0Adelante(ResAux2, Cantidad0, Res).
-ordenarColumnas(Grid, Contador, Res) :- ContadorAux is Contador+1,ordenarColumnas(Grid,ContadorAux,ColumnasOrdenadas),sacarColumnaI(Grid, 0, Contador,5, ResAux1), sacarDistintos0(ResAux1, ResAux2), length(ResAux1,CantElementos1),
- length(ResAux2,CantElementos2), Cantidad0 is CantElementos1-CantElementos2, poner0Adelante(ResAux2, Cantidad0, ResAux3),append(ResAux3,ColumnasOrdenadas,Res).
-
-
-/**
- * 
- * 
- **/
-ponerColumnasBien(Grid, 8, Res):-sacarColumnaI(Grid,0,8,8,Res).
-ponerColumnasBien(Grid, Contador, Res) :- ContadorAux is Contador+1,ponerColumnasBien(Grid,ContadorAux,ResAux2),
- sacarColumnaI(Grid, 0, Contador,8, ResAux1), append(ResAux1, ResAux2, Res).
-
-/**
- * 
- * 
+ *gravedad(+Grid,-Res) 
+ * Res es la grilla Grid luego de aplicar la gravedad 1 vez, es decir que los elementos son desplazados 1 cuadrado para abajo en las columnas donde hay un 0, y reemplaza el primer elemento de la colummna
+ * por una potencia de 2 random. 
  **/
 gravedad(Grid, Res):- ordenarColumnas(Grid,0, ResAux),ponerColumnasBien(ResAux,0, Res).
 
 
 /**
- * 
- * 
+ * grillasConGravedad(+Grid,+ListaResultante,-ListaRec)
+ * ListaRec es la lista que contiene las grillas luego de aplicar gravedad hasta que no sea posible aplicar devuelta.
  **/
-reemplazarPorPotencias([X], [X]) :- X\=0.
-reemplazarPorPotencias([X], [Res]) :- X=0, generarPotencia2Random(Res).
-reemplazarPorPotencias([X|Xs], [X|Res]) :- X\=0, reemplazarPorPotencias(Xs, Res).
-reemplazarPorPotencias([X|Xs], [Y|Res]) :- X=0, generarPotencia2Random(Y), reemplazarPorPotencias(Xs, Res).
+grillasConGravedad(Grid,ListaResultante,ListaRec):-member(0,Grid),gravedad(Grid,GrillaConGravedad),append(ListaResultante, [GrillaConGravedad], Resultado),grillasConGravedad(GrillaConGravedad,Resultado,ListaRec).
+grillasConGravedad(Grid,ListaResultante,ListaResultante):-not(member(0,Grid)). 
 
 
 %Empieza_el_booster
@@ -322,4 +327,4 @@ borrarGrupos(Grid,GridRes):-sacarGruposGrilla(Grid,0,[],ListaGrupos),procesarEli
  * RGrid es una lista con los pasos que hace la grilla para aplicar el powerUp
  * El numero 0 en las celdas reperesenta una celda vacia.
  **/ 
-powerUp(Grid,RGrids):-borrarGrupos(Grid,GridA),gravedad(GridA,GridB),reemplazarPorPotencias(GridB,GridC),RGrids = [GridA,GridB,GridC].
+powerUp(Grid,RGrids):-borrarGrupos(Grid,GridA),grillasConGravedad(GridA,[GridA],RGrids).
