@@ -98,6 +98,9 @@ sacarColumnaI([_|Xs], Contador, Numero, NumMod, Res) :-  Numero =\= Contador mod
 borrarElemento([_X|Xs], 0, Xs).
 borrarElemento([X|Xs], Y, [X|Res]):- YAux is Y-1, borrarElemento(Xs, YAux, Res).
 
+/**
+ * ultimaAparicion0(+Columna, -PosicionUltimaAparicion)
+ **/
 ultimaAparicion0(Lista, UltimaAparicion) :-
     reverse(Lista, Reversa),           % invertir la lista
     append(_, [0|Resto], Reversa),     % buscar la última aparición de 0 en la lista invertida
@@ -142,8 +145,8 @@ gravedad(Grid, Res):- ordenarColumnas(Grid,0, ResAux),ponerColumnasBien(ResAux,0
  * grillasConGravedad(+Grid,+ListaResultante,-ListaRec)
  * ListaRec es la lista que contiene las grillas luego de aplicar gravedad hasta que no sea posible aplicar devuelta.
  **/
-grillasConGravedad(Grid,ListaResultante,ListaRec):-member(0,Grid),gravedad(Grid,GrillaConGravedad),append(ListaResultante, [GrillaConGravedad], Resultado),grillasConGravedad(GrillaConGravedad,Resultado,ListaRec).
-grillasConGravedad(Grid,ListaResultante,ListaResultante):-not(member(0,Grid)). 
+grillasConGravedad(Grid,ListaInicial,ListaRes):-member(0,Grid),gravedad(Grid,GrillaConGravedad),append(ListaInicial, [GrillaConGravedad], Resultado),grillasConGravedad(GrillaConGravedad,Resultado,ListaRes).
+grillasConGravedad(Grid,ListaInicial,ListaInicial):-not(member(0,Grid)). 
 
 
 %Empieza_el_booster
@@ -273,8 +276,10 @@ estaContenida([_ListaCabeza|SubListas], ListaBuscada) :-estaContenida(SubListas,
  * mismaLista(+ListaAComprobar,+Lista)
  * Devuelve true si ambas listas tienen los mismos elementos.
  **/ 
-mismaLista(ListaAComprobar,[X]):-member(X,ListaAComprobar).
-mismaLista(ListaAComprobar,[X|Xs]):-member(X,ListaAComprobar),mismaLista(ListaAComprobar,Xs).
+mismaLista([], []).
+mismaLista([X|Xs], Ys) :-
+    select(X, Ys, Ys1), % el predicado select busca el elemento X en la lista Ys, y lo elimina
+    mismaLista(Xs, Ys1).
 
 /**
  * 
@@ -286,7 +291,7 @@ calcularSuma(Grid, [X|Xs], Res) :- calcularSuma(Grid, Xs, ResAux),buscarElemento
 
 
 /**
- * sacarGruposGrilla(+Grid,+ListaGrupos,-ListaDeGruposFinal)
+ * sacarGruposGrilla(+Grid,+Posicion,+ListaGrupos,-ListaDeGruposFinal)
  * ListaDeGruposFinal es una lista la cual contiene todos los grupos de la grilla.
  * ListaGrupos es una lista la cual va guardando los grupos armados, para no tener duplicados.
  **/ 
