@@ -11,8 +11,8 @@
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
  */ 
 
- join(Grid, NumOfColumns, Path, RGrids):- calcularSumaPath(Grid, NumOfColumns, Path, Suma), calcularProximaPotencia(Suma, 2, Res), generarLista(Grid, NumOfColumns, Path,Res,GridA),
- grillasConGravedad(GridA,[GridA],ListaResultante),RGrids = ListaResultante.
+ join(Grid, NumOfColumns, Path, RGrids):- calcularSumaPath(Grid, NumOfColumns, Path, Suma), calcularProximaPotencia(Suma, 2, ProximaPotencia), generarLista(Grid, NumOfColumns, Path,ProximaPotencia,GridA),
+ grillasConGravedad(GridA,[GridA],ListaGrillasResultante),RGrids = ListaGrillasResultante.
 
 
 /**
@@ -20,56 +20,75 @@
  * sacarIDelPath es un predicado, el cual le pasas el conjunto [X,Y] de un elemento del path y te calcula el
  * indice de la lista de la Grilla. Ejemplo, Conjunto [2,3] devuelve 2+NumOfColumns*3 
  **/
-sacarIDelPath([X], _NumOfColumns, X).
-sacarIDelPath([X|Xs], NumOfColumns, Res1) :- sacarIDelPath(Xs, NumOfColumns, ResAux), Res1 is ResAux+(X*NumOfColumns).
+sacarIDelPath([IndiceColumna], _NumOfColumns, IndiceColumna).
+sacarIDelPath([IndiceFila|Columna], NumOfColumns, IndiceGrilla) :- sacarIDelPath(Columna, NumOfColumns, IndiceColumna), IndiceGrilla is IndiceColumna+(IndiceFila*NumOfColumns).
 
 
 /**
  * borrarElementoI(+Lista,+Indice,-ListaConIndiceBorrado)
  * ListaConIndiceBorrado es la Lista con el elemento en el Indice convertido en 0.  
  **/
-borrarElementoI([_X|Xs], 0, [0|Xs]).
-borrarElementoI([X|Xs], Y, [X|Res]):- YAux is Y-1, borrarElementoI(Xs, YAux, Res).
+borrarElementoI([_X|Resto], 0, [0|Resto]).
+borrarElementoI([X|Resto], Cont, [X|ResultadoEliminacion]):- ContMenos1 is Cont-1, borrarElementoI(Resto, ContMenos1, ResultadoEliminacion).
 
 
 /**
  * reemplazarElementoI(+Lista,+Indice,+ElementoAPoner,-ListaProcesada)
  * ListaProcesada es la Lista pasada, con el elemento en el Indice reemplazado por ElementoAPoner. 
  **/
-reemplazarElementoI([_X|Xs], 0, Z, [Z|Xs]).
-reemplazarElementoI([X|Xs], Y, Z, [X|Res]):- YAux is Y-1, reemplazarElementoI(Xs, YAux, Z, Res).
+reemplazarElementoI([_X|Resto], 0, ElementoAInsertar, [ElementoAInsertar|Resto]).
+reemplazarElementoI([X|Resto], Cont, ElementoAInsertar, [X|Res]):- ContMenos1 is Cont-1, reemplazarElementoI(Resto, ContMenos1, ElementoAInsertar, Res).
+
 
 /**
  * generarLista(+Grid,+NumOfColumns,+Path,-GridProcesada)
  * GridProcesada es una Grilla en la cual los elementos del Path son eliminados en Grid.
  **/
-generarLista(Grid, NumOfColumns, [X],Suma, GridRes) :- sacarIDelPath(X, NumOfColumns, PosI), reemplazarElementoI(Grid, PosI, Suma, GridRes).
-generarLista(Grid, NumOfColumns, [X|Xs],Suma, GridRes) :- generarLista(Grid, NumOfColumns, Xs,Suma,GridAux), 
-			 sacarIDelPath(X, NumOfColumns, PosI), borrarElementoI(GridAux, PosI, GridRes).
+generarLista(Grid, NumOfColumns, [X],Suma, GridProcesada) :- sacarIDelPath(X, NumOfColumns, PosI), reemplazarElementoI(Grid, PosI, Suma, GridProcesada).
+generarLista(Grid, NumOfColumns, [X|Sublista],Suma, GridProcesada) :- generarLista(Grid, NumOfColumns, Sublista,Suma,GridAux), 
+			 sacarIDelPath(X, NumOfColumns, PosI), borrarElementoI(GridAux, PosI, GridProcesada).
 
 /**
  * buscarElementoI(+Lista,+Indice,-ElementoBuscado)
  * ElementoBuscado es el elemento en el Indice pasado en la Lista.
  * El indice comienza desde 0.
  **/
-buscarElementoI([X|_XS], 0, X).
-buscarElementoI([_X|Xs], Y, Res):- YAux is Y-1, buscarElementoI(Xs,YAux,Res).			
+buscarElementoI([ElementoBuscado|_SubLista], 0, ElementoBuscado).
+buscarElementoI([_X|Sublista], Cont, ElementoBuscado):- ContMenos1 is Cont-1, buscarElementoI(Sublista,ContMenos1,ElementoBuscado).			
+
+
+/**
+ * pasarPathAListaIndices(+Path,+NumOfColumns,-ListaIndices)
+ * ListaIndices es la lista con las posiciones del path convertidas a indices de una lista del 0 a X.
+ * Por ejemplo si tenemos un elemento del path [1,2], el indice sera 7. 
+ * */
+pasarPathAListaIndices([X],NumOfColumns,[Res]):-sacarIDelPath(X,NumOfColumns,Res).
+pasarPathAListaIndices([X|RestoPath],NumOfColumns,[Res|ListaIndices]):-pasarPathAListaIndices(RestoPath,NumOfColumns,ListaIndices),
+    sacarIDelPath(X,NumOfColumns,Res).
+
+
+/**
+ * calcularSuma(+Grid,+ListaACalcular,-ResultadoSuma)
+ * ListaACalcular es una lista con indices de la grilla
+ * ResutladoSuma es el resultado de sumar todos los elementos de las posiciones en los indices de ListaACalcular.
+ * */
+calcularSuma(Grid, [X], ResultadoSuma) :- buscarElementoI(Grid, X, ResultadoSuma).
+calcularSuma(Grid, [X|Xs], ResultadoSuma) :- calcularSuma(Grid, Xs, ResultadoSumaAux),buscarElementoI(Grid, X, Elemento), ResultadoSuma is ResultadoSumaAux+Elemento.
+
 
 /**
  * calcularSumaPath(+Grid,+NumOfColumns,+Path,-ResultadoSuma)
  * ResultadoSuma es el resultado de sumar todos los elementos señalados por cada posicion del Path en la Grid. 
  **/
-calcularSumaPath(Grid, NumOfColumns, [X], Res) :- sacarIDelPath(X, NumOfColumns, PosI), buscarElementoI(Grid, PosI, Res).
-calcularSumaPath(Grid, NumOfColumns, [X|Xs], Res) :- calcularSumaPath(Grid, NumOfColumns, Xs, ResAux),
- sacarIDelPath(X, NumOfColumns, PosI), buscarElementoI(Grid, PosI, ResAux2), Res is ResAux+ResAux2.
+calcularSumaPath(Grid, NumOfColumns, Path, ResultadoSuma) :-pasarPathAListaIndices(Path,NumOfColumns,PathConIndices),calcularSuma(Grid,PathConIndices,ResultadoSuma). 
 
 /**
- * calcularProximaPotencia(+Numero,+Y,-ProximaPotencia)
+ * calcularProximaPotencia(+Numero,+Exponente,-ProximaPotencia)
  * ProximaPotencia es la proxima potencia de 2, del Numero pasado.
  * Y es el exponente.
  **/
-calcularProximaPotencia(Numero, Y, ProximaPotencia) :- Numero>(2**Y), Y2 is Y+1, calcularProximaPotencia(Numero, Y2, ProximaPotencia).
-calcularProximaPotencia(Numero, Y, ProximaPotencia) :- Numero=<(2**Y), ProximaPotencia is 2**Y.
+calcularProximaPotencia(Numero, Exponente, ProximaPotencia) :- Numero>(2**Exponente), SiguienteExponente is Exponente+1, calcularProximaPotencia(Numero, SiguienteExponente, ProximaPotencia).
+calcularProximaPotencia(Numero, Exponente, ProximaPotencia) :- Numero=<(2**Exponente), ProximaPotencia is 2**Exponente.
 
 /**
  * generarPotencia2Random(-Resultado)
@@ -80,14 +99,15 @@ generarPotencia2Random(Resultado) :-
     Resultado is 2 ** Exponente.
 
 /**
- *sacarColumnaI(+Grid,+Contador,+Numero,+NumMod,-Columna)
- * Columna es la columna Numero en la Grilla Grid.     
+ *sacarColumnaI(+Grid,+Contador,+ColumnaI,+CantidadColumnas,-ListaColumna)
+ * Columna es la ColumnaI en la Grilla Grid.
+     
  * Por Ejemplo si le pasamos sacarColumnaI(+Grid,+Contador,4,5,-Columna) en una grilla de 5 columnas, nos devuelve la columna de mas a la derecha.
  **/
-sacarColumnaI([_X], Contador, Numero, NumMod, Res) :- Numero =\= Contador mod NumMod, Res = [].
-sacarColumnaI([X], Contador, Numero, NumMod, Res) :- Numero =:= Contador mod NumMod, Res = [X].
-sacarColumnaI([X|Xs], Contador, Numero, NumMod, [X|ResAux]) :-  Numero =:= Contador mod NumMod, Contador2 is Contador+1, sacarColumnaI(Xs, Contador2, Numero, NumMod, ResAux).
-sacarColumnaI([_|Xs], Contador, Numero, NumMod, Res) :-  Numero =\= Contador mod NumMod, Contador2 is Contador+1, sacarColumnaI(Xs, Contador2, Numero, NumMod, Res).
+sacarColumnaI([_X], Contador, ColumnaI, CantidadColumnas, []) :- ColumnaI =\= Contador mod CantidadColumnas.
+sacarColumnaI([X], Contador, ColumnaI, CantidadColumnas, [X]) :- ColumnaI =:= Contador mod CantidadColumnas.
+sacarColumnaI([X|SubLista], Contador, ColumnaI, CantidadColumnas, [X|ListaColumna]) :-  ColumnaI =:= Contador mod CantidadColumnas, Contador2 is Contador+1, sacarColumnaI(SubLista, Contador2, ColumnaI, CantidadColumnas, ListaColumna).
+sacarColumnaI([_|SubLista], Contador, ColumnaI, CantidadColumnas, ListaColumna) :-  ColumnaI =\= Contador mod CantidadColumnas, Contador2 is Contador+1, sacarColumnaI(SubLista, Contador2, ColumnaI, CantidadColumnas, ListaColumna).
 
 
 /**
@@ -95,11 +115,12 @@ sacarColumnaI([_|Xs], Contador, Numero, NumMod, Res) :-  Numero =\= Contador mod
  * ListaRes es la lista con el elemento en el indice Pos eliminado. 
  * El tamaño de ListaRes es la longitud de Lista menos 1.
  **/
-borrarElemento([_X|Xs], 0, Xs).
-borrarElemento([X|Xs], Y, [X|Res]):- YAux is Y-1, borrarElemento(Xs, YAux, Res).
+borrarElemento([_X|SubLista], 0, SubLista).
+borrarElemento([X|SubLista], Y, [X|Res]):- YAux is Y-1, borrarElemento(SubLista, YAux, Res).
 
 /**
- * ultimaAparicion0(+Columna, -PosicionUltimaAparicion)
+ * ultimaAparicion0(+Lista, -PosicionUltimaAparicion)
+ * PosicionUltimaAparicion es el indice del ultimo 0 en la lista.
  **/
 ultimaAparicion0(Lista, UltimaAparicion) :-
     reverse(Lista, Reversa),           % invertir la lista
@@ -109,11 +130,11 @@ ultimaAparicion0(Lista, UltimaAparicion) :-
 
 
 /**
- * reemplazar0(+Lista,-ListaProcesada)
+ * reemplazarUltimo0(+Lista,-ListaProcesada)
  * ListaProcesada es la Lista con la ultima aparicion de 0 borrada y reemplazado por una potencia de 2 al principio de la lista.
  **/
-reemplazar0(Lista,[Pot|Res]):-ultimaAparicion0(Lista,UltimaAparicion),borrarElemento(Lista,UltimaAparicion,Res),generarPotencia2Random(Pot).
-reemplazar0(Lista,Lista).
+reemplazarUltimo0(Lista,[Pot|Res]):-ultimaAparicion0(Lista,UltimaAparicion),borrarElemento(Lista,UltimaAparicion,Res),generarPotencia2Random(Pot).
+reemplazarUltimo0(Lista,Lista).
 
 
 /**
@@ -121,29 +142,30 @@ reemplazar0(Lista,Lista).
  * Res es una lista con todas las columnas de Grid concatenadas empezando de la 4 hasta la 0.
  * 
  **/
-ordenarColumnas(Grid, 4, Res) :- sacarColumnaI(Grid, 0, 4, 5, ResAux1), reemplazar0(ResAux1,Res).
-ordenarColumnas(Grid, Contador, Res) :- ContadorAux is Contador+1,ordenarColumnas(Grid,ContadorAux,ColumnasOrdenadas),sacarColumnaI(Grid, 0, Contador,5, ResAux1), reemplazar0(ResAux1,ResAux3),append(ResAux3,ColumnasOrdenadas,Res).
+ordenarColumnas(Grid, 4, Res) :- sacarColumnaI(Grid, 0, 4, 5, Columna), reemplazarUltimo0(Columna,Res).
+ordenarColumnas(Grid, Contador, Res) :- ContadorAux is Contador+1,ordenarColumnas(Grid,ContadorAux,ColumnasOrdenadas),sacarColumnaI(Grid, 0, Contador,5, Columna), reemplazarUltimo0(Columna,ColumnaProcesada),append(ColumnaProcesada,ColumnasOrdenadas,Res).
 
 
 /**
- * ponerColumnasBien(+ColumnasConcatenadas,+Cont,-Res)
- * Res es la grilla armada devuelta a partir de agarrar la lista con las columnas concatenadas.
+ * armarGrilla(+ColumnasConcatenadas,+Cont,-GrillaOrdenada)
+ * GrillaOrdenada es la grilla armada devuelta a partir de agarrar la lista con las columnas concatenadas.
  **/
-ponerColumnasBien(ColumnasConcatenadas, 8, Res):-sacarColumnaI(ColumnasConcatenadas,0,8,8,Res).
-ponerColumnasBien(ColumnasConcatenadas, Contador, Res) :- ContadorAux is Contador+1,ponerColumnasBien(ColumnasConcatenadas,ContadorAux,ResAux2),
- sacarColumnaI(ColumnasConcatenadas, 0, Contador,8, ResAux1), append(ResAux1, ResAux2, Res).
+armarGrilla(ColumnasConcatenadas, 8, FilaOrdenada):-sacarColumnaI(ColumnasConcatenadas,0,8,8,FilaOrdenada).
+armarGrilla(ColumnasConcatenadas, Contador, GrillaOrdenada) :- ContadorAux is Contador+1,armarGrilla(ColumnasConcatenadas,ContadorAux,FilasOrdenadas),
+ sacarColumnaI(ColumnasConcatenadas, 0, Contador,8, Fila), append(Fila, FilasOrdenadas, GrillaOrdenada).
 
 /**
  *gravedad(+Grid,-Res) 
  * Res es la grilla Grid luego de aplicar la gravedad 1 vez, es decir que los elementos son desplazados 1 cuadrado para abajo en las columnas donde hay un 0, y reemplaza el primer elemento de la colummna
  * por una potencia de 2 random. 
  **/
-gravedad(Grid, Res):- ordenarColumnas(Grid,0, ResAux),ponerColumnasBien(ResAux,0, Res).
+gravedad(Grid, Res):- ordenarColumnas(Grid,0, ResAux),armarGrilla(ResAux,0, Res).
 
 
 /**
- * grillasConGravedad(+Grid,+ListaResultante,-ListaRec)
- * ListaRec es la lista que contiene las grillas luego de aplicar gravedad hasta que no sea posible aplicar devuelta.
+ * grillasConGravedad(+Grid,+ListaResultante,-ListaRes)
+ * ListaRes es la lista que contiene las grillas luego de aplicar gravedad hasta que no sea posible aplicar devuelta.
+ * Este predicado funcionaria como un while(member(0,Grid))
  **/
 grillasConGravedad(Grid,ListaInicial,ListaRes):-member(0,Grid),gravedad(Grid,GrillaConGravedad),append(ListaInicial, [GrillaConGravedad], Resultado),grillasConGravedad(GrillaConGravedad,Resultado,ListaRes).
 grillasConGravedad(Grid,ListaInicial,ListaInicial):-not(member(0,Grid)). 
@@ -157,7 +179,7 @@ grillasConGravedad(Grid,ListaInicial,ListaInicial):-not(member(0,Grid)).
  * ResFila es el numero de la fila de la posicion Pos.
  **/
 filaPos(Pos,0):-Pos<5,Pos>=0.
-filaPos(Pos,ResFila):-PosAux is Pos-5,Pos>=0,filaPos(PosAux,ResAux),ResFila is ResAux+1.
+filaPos(Pos,Fila):-PosAux is Pos-5,Pos>=0,filaPos(PosAux,FilaAnterior),Fila is FilaAnterior+1.
 
 /**
  * mismaFila(+Pos1,+Pos2)
@@ -170,13 +192,13 @@ mismaFila(Pos1,Pos2):-filaPos(Pos1,Fila1),filaPos(Pos2,Fila2),Fila1 =:= Fila2.
  * filaAbajo(+Pos1,+Pos2)
  * Devuelve true si la Pos1 esta una fila abajo de Pos2, sino false.
  **/
-filaAbajo(Pos1,Pos2) :-filaPos(Pos1,Res1),filaPos(Pos2,Res2),Res2 is Res1+1.
+filaAbajo(Pos1,Pos2) :-filaPos(Pos1,FilaPos1),filaPos(Pos2,FilaPos2),FilaPos2 is FilaPos1+1.
 
 /**
  * filaArriba(+Pos1,+Pos2)
  * Devuelve true si la Pos1 esta una fila arriba de Pos2, sino false.
  **/
-filaArriba(Pos1,Pos2) :-filaPos(Pos1,Res1),filaPos(Pos2,Res2),Res2 is Res1-1.
+filaArriba(Pos1,Pos2) :-filaPos(Pos1,FilaPos1),filaPos(Pos2,FilaPos2),FilaPos2 is FilaPos1-1.
 
 /**
  * adyacenteArriba(+Grid,+Elemento,+Pos,+Lista,-ListaProcesada)
@@ -280,14 +302,6 @@ mismaLista([], []).
 mismaLista([X|Xs], Ys) :-
     select(X, Ys, Ys1), % el predicado select busca el elemento X en la lista Ys, y lo elimina
     mismaLista(Xs, Ys1).
-
-/**
- * 
- * VER SI NO SE PUEDE REEMPLAZAR POR EL HECHO ANTES EN EL JOIN YA QUE HACEN LO MISMO PERO UNO CON PATH Y EL OTRO CON INDICES DE LA GRILLA
- **/
-
-calcularSuma(Grid, [X], Res) :- buscarElementoI(Grid, X, Res).
-calcularSuma(Grid, [X|Xs], Res) :- calcularSuma(Grid, Xs, ResAux),buscarElementoI(Grid, X, ResAux2), Res is ResAux+ResAux2.
 
 
 /**
