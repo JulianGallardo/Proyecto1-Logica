@@ -213,8 +213,9 @@ adyacenteArriba(_Grid, _Elemento, _Pos,Lista,Lista).
  * ListaProcesada es el resultado de procesar el adyacente de Abajo de la posicion Pos, si el elemento en la posicion del adyacente es igual al elemento Elemento, entonces se buscan los
  * adyacentes del adyacente. 
  **/
-adyacenteAbajo(Grid,Elemento, Pos,Lista,ListaProcesada):-PosAdyacenteInferior is Pos+5,PosAdyacenteIzq<40,not(member(PosAdyacenteInferior,Lista)),nth0(PosAdyacenteInferior,Grid,Achequear),Elemento=:=Achequear,adyacentes(Grid,Elemento,PosAdyacenteInferior,[PosAdyacenteIzq|Lista],ListaProcesada).
+adyacenteAbajo(Grid,Elemento, Pos,Lista,ListaProcesada):-PosAdyacenteInferior is Pos+5,PosAdyacenteInferior<40,not(member(PosAdyacenteInferior,Lista)),nth0(PosAdyacenteInferior,Grid,Achequear),Elemento=:=Achequear,adyacentes(Grid,Elemento,PosAdyacenteInferior,[PosAdyacenteInferior|Lista],ListaProcesada).
 adyacenteAbajo(_Grid, _Elemento, _Pos,Lista,Lista).
+
 
 /**
  * adyacenteIzquierda(+Grid,+Elemento,+Pos,+Lista,-ListaProcesada)
