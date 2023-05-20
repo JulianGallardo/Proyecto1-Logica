@@ -12,11 +12,15 @@ function Game() {
   // State
   const [grid, setGrid] = useState(null);
   const [numOfColumns, setNumOfColumns] = useState(null);
+  const [numOfRows,setNumOfRows]=useState(null);
   const [score, setScore] = useState(0);
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
   const [newBlockValue, setValue] =useState(1);
+  const [btn_ColapsarIguales,setEstadoBtnColapsarIguales]=useState(false);
 
+
+  
   useEffect(() => {
     // This is executed just once, after the first render.
     PengineClient.init(onServerReady);
@@ -27,11 +31,12 @@ function Game() {
    */
   function onServerReady(instance) {
     pengine = instance;
-    const queryS = 'init(Grid, NumOfColumns)';
+    const queryS = 'init(Grid, NumOfColumns,NumOfRows)';
     pengine.query(queryS, (success, response) => {
       if (success) {
         setGrid(response['Grid']);
         setNumOfColumns(response['NumOfColumns']);
+        setNumOfRows(response['NumOfRows'])
       }
     });
   }
@@ -81,16 +86,27 @@ function Game() {
           RGrids
         ).
     */
+          
         const gridS = JSON.stringify(grid);
-        const queryS = "powerUp(" + gridS + ", RGrids)";
+        const queryS = "powerUp(" + gridS + ","+numOfColumns+","+numOfRows+", RGrids)";
+       
         setWaiting(true);
+        
+        
         pengine.query(queryS, (success, response) => {
           if (success) {
+            setEstadoBtnColapsarIguales(true);
+            console.log(btn_ColapsarIguales);
             animateEffect(response['RGrids']);
           } else {
             setWaiting(false);
+            setEstadoBtnColapsarIguales(false);
           }
+         
         });
+        
+        console.log(btn_ColapsarIguales);
+
   }
 
 
@@ -117,16 +133,20 @@ function Game() {
     */
     const gridS = JSON.stringify(grid);
     const pathS = JSON.stringify(path);
-    const queryS = "join(" + gridS + "," + numOfColumns + "," + pathS + ", RGrids)";
+    const queryS = "join(" + gridS + "," + numOfColumns + ","+numOfRows + "," + pathS + ", RGrids)";
     setWaiting(true);
     pengine.query(queryS, (success, response) => {
       if (success) {
+        
         setScore(score + joinResult(path, grid, numOfColumns));
         setPath([]);
         animateEffect(response['RGrids']);
+        
       } else {
         setWaiting(false);
+        
       }
+
     });
   }
 
@@ -142,6 +162,7 @@ function Game() {
         animateEffect(restRGrids);
       }, 500);
     } else {
+      setEstadoBtnColapsarIguales(false);
       setWaiting(false);
     }
   }
@@ -166,6 +187,7 @@ function Game() {
         onDone={onPathDone}
       />
       <Button
+        Estado={btn_ColapsarIguales}
         onClickEvent={booster}
       />
     </div>

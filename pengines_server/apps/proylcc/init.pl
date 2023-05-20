@@ -1,7 +1,7 @@
-:- module(init, [ init/2 ]).
+:- module(init, [ init/3 ]).
 
 /**
- * init(-Grid, -NumOfColumns).
+ * init(-Grid, -NumOfColumns,-NumOfRows).
  * 
  * Predicado especificando la grilla inicial, que será mostrada al comienzo del juego, donde
  * Grid es una lista con los números que conforman la grilla, y NumOfColumns es la cantidad de columnas, 
@@ -17,4 +17,4 @@ init([
 	16,64,2,32,32,
 	64,2,64,32,64,
 	32,2,64,32,4
-], 5).
+], 5,8).

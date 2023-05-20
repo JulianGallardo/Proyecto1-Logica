@@ -1,7 +1,7 @@
 :- module(proylcc, 
 	[  
-		join/4,
-        powerUp/2
+		join/5,
+        powerUp/4
 	]).
 
 
@@ -11,8 +11,8 @@
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
  */ 
 
- join(Grid, NumOfColumns, Path, RGrids):- calcularSumaPath(Grid, NumOfColumns, Path, Suma), calcularProximaPotencia(Suma, 2, ProximaPotencia), generarLista(Grid, NumOfColumns, Path,ProximaPotencia,GridA),
- grillasConGravedad(GridA,[GridA],ListaGrillasResultante),RGrids = ListaGrillasResultante.
+ join(Grid, NumOfColumns,NumOfRows, Path, RGrids):- calcularSumaPath(Grid, NumOfColumns, Path, Suma), calcularProximaPotencia(Suma, 2, ProximaPotencia), generarLista(Grid, NumOfColumns, Path,ProximaPotencia,GridA),
+ grillasConGravedad(GridA,[GridA],NumOfColumns,NumOfRows,ListaGrillasResultante),RGrids = ListaGrillasResultante.
 
 
 /**
@@ -142,33 +142,33 @@ reemplazarUltimo0(Lista,Lista).
  * Res es una lista con todas las columnas de Grid concatenadas empezando de la 4 hasta la 0.
  * 
  **/
-ordenarColumnas(Grid, 4, Res) :- sacarColumnaI(Grid, 0, 4, 5, Columna), reemplazarUltimo0(Columna,Res).
-ordenarColumnas(Grid, Contador, Res) :- ContadorAux is Contador+1,ordenarColumnas(Grid,ContadorAux,ColumnasOrdenadas),sacarColumnaI(Grid, 0, Contador,5, Columna), reemplazarUltimo0(Columna,ColumnaProcesada),append(ColumnaProcesada,ColumnasOrdenadas,Res).
+ordenarColumnas(Grid, 4,NumOfColumns, Res) :- sacarColumnaI(Grid, 0, 4, NumOfColumns, Columna), reemplazarUltimo0(Columna,Res).
+ordenarColumnas(Grid, Contador,NumOfColumns, Res) :- ContadorAux is Contador+1,ordenarColumnas(Grid,ContadorAux,NumOfColumns,ColumnasOrdenadas),sacarColumnaI(Grid, 0, Contador,5, Columna), reemplazarUltimo0(Columna,ColumnaProcesada),append(ColumnaProcesada,ColumnasOrdenadas,Res).
 
 
 /**
- * armarGrilla(+ColumnasConcatenadas,+Cont,-GrillaOrdenada)
+ * armarGrilla(+ColumnasConcatenadas,+Cont,+NumOfRows,-GrillaOrdenada)
  * GrillaOrdenada es la grilla armada devuelta a partir de agarrar la lista con las columnas concatenadas.
  **/
-armarGrilla(ColumnasConcatenadas, 8, FilaOrdenada):-sacarColumnaI(ColumnasConcatenadas,0,8,8,FilaOrdenada).
-armarGrilla(ColumnasConcatenadas, Contador, GrillaOrdenada) :- ContadorAux is Contador+1,armarGrilla(ColumnasConcatenadas,ContadorAux,FilasOrdenadas),
- sacarColumnaI(ColumnasConcatenadas, 0, Contador,8, Fila), append(Fila, FilasOrdenadas, GrillaOrdenada).
+armarGrilla(ColumnasConcatenadas,Contador, NumOfRows, FilaOrdenada):-Contador=:=NumOfRows,sacarColumnaI(ColumnasConcatenadas,0,NumOfRows,NumOfRows,FilaOrdenada).
+armarGrilla(ColumnasConcatenadas, Contador,NumOfRows, GrillaOrdenada) :- ContadorAux is Contador+1,armarGrilla(ColumnasConcatenadas,ContadorAux,NumOfRows,FilasOrdenadas),
+ sacarColumnaI(ColumnasConcatenadas, 0, Contador,NumOfRows, Fila), append(Fila, FilasOrdenadas, GrillaOrdenada).
 
 /**
- *gravedad(+Grid,-Res) 
+ *gravedad(+Grid,+NumOfColumns,+NumOfRows,-Res) 
  * Res es la grilla Grid luego de aplicar la gravedad 1 vez, es decir que los elementos son desplazados 1 cuadrado para abajo en las columnas donde hay un 0, y reemplaza el primer elemento de la colummna
  * por una potencia de 2 random. 
  **/
-gravedad(Grid, Res):- ordenarColumnas(Grid,0, ResAux),armarGrilla(ResAux,0, Res).
+gravedad(Grid,NumOfColumns,NumOfRows,Res):- ordenarColumnas(Grid,0,NumOfColumns, ResAux),armarGrilla(ResAux,0,NumOfRows,Res).
 
 
 /**
- * grillasConGravedad(+Grid,+ListaResultante,-ListaRes)
+ * grillasConGravedad(+Grid,+ListaResultante,+NumOfColumns,+NumOfRows,-ListaRes)
  * ListaRes es la lista que contiene las grillas luego de aplicar gravedad hasta que no sea posible aplicar devuelta.
  * Este predicado funcionaria como un while(member(0,Grid))
  **/
-grillasConGravedad(Grid,ListaInicial,ListaRes):-member(0,Grid),gravedad(Grid,GrillaConGravedad),append(ListaInicial, [GrillaConGravedad], Resultado),grillasConGravedad(GrillaConGravedad,Resultado,ListaRes).
-grillasConGravedad(Grid,ListaInicial,ListaInicial):-not(member(0,Grid)). 
+grillasConGravedad(Grid,ListaInicial,NumOfColumns,NumOfRows,ListaRes):-member(0,Grid),gravedad(Grid,NumOfColumns,NumOfRows,GrillaConGravedad),append(ListaInicial, [GrillaConGravedad], Resultado),grillasConGravedad(GrillaConGravedad,Resultado,NumOfColumns,NumOfRows,ListaRes).
+grillasConGravedad(Grid,ListaInicial,_NumOfColumns,_NumOfRows,ListaInicial):-not(member(0,Grid)). 
 
 
 %Empieza_el_booster
@@ -288,32 +288,17 @@ adyacentes(Grid, ElemInPos, Pos,Lista, ListaAdyacentesFinal) :-
  **/ 
 sacarGrupo(Grid,Pos,ListaResultante):-nth0(Pos,Grid,ElemInPos),adyacentes(Grid,ElemInPos,Pos,[],ListaResultante).
 
- /**
-* estaContenida(+ListaDeListas,+ListaBuscada)
- * Devuelve true si la ListaBuscada es igual a alguna de las Listas en la ListaDeListas, no importa si los elementos no tiene el mismo orden.
- **/ 
-estaContenida([ListaCabeza|_SubListas], ListaBuscada) :-mismaLista(ListaCabeza,ListaBuscada).
-estaContenida([_ListaCabeza|SubListas], ListaBuscada) :-estaContenida(SubListas,ListaBuscada).
-    
-/**
- * mismaLista(+ListaAComprobar,+Lista)
- * Devuelve true si ambas listas tienen los mismos elementos.
- **/ 
-mismaLista([], []).
-mismaLista([X|SubLista],ListaAComparar) :-
-    select(X, ListaAComparar, ListaACompararAux), % el predicado select busca el elemento X en la lista ListaACompararAux, y lo elimina
-    mismaLista(SubLista, ListaACompararAux).
-
 
 /**
- * sacarGruposGrilla(+Grid,+Posicion,+ListaGrupos,-ListaDeGruposFinal)
+ * sacarGruposGrilla(+Grid,+Posicion,+;ListaVisitados,+ListaGrupos,-ListaDeGruposFinal)
+ * ListaVisitados es una lista la cual guarda todos los indices ya visitados por los grupos.
  * ListaDeGruposFinal es una lista la cual contiene todos los grupos de la grilla.
  * ListaGrupos es una lista la cual va guardando los grupos armados, para no tener duplicados.
  **/ 
-sacarGruposGrilla(Grid, 39, ListaGrupos, [Grupo|ListaGrupos]) :- sacarGrupo(Grid, 39, Grupo),length(Grupo,Long),Long>1,not(estaContenida(ListaGrupos,Grupo)).
-sacarGruposGrilla(_Grid, 39, ListaGrupos, ListaGrupos).
-sacarGruposGrilla(Grid, Posicion, ListaGrupos, ListaDeGruposFinal) :- sacarGrupo(Grid, Posicion, Grupo),length(Grupo,Long),Long>1, not(estaContenida(ListaGrupos,Grupo)), Posicion2 is Posicion+1, sacarGruposGrilla(Grid, Posicion2,[Grupo|ListaGrupos],ListaDeGruposFinal).
-sacarGruposGrilla(Grid, Posicion, ListaGrupos, ListaDeGruposFinal) :- Posicion2 is Posicion+1, sacarGruposGrilla(Grid, Posicion2, ListaGrupos, ListaDeGruposFinal).
+sacarGruposGrilla(Grid, 39, ListaVisitados,ListaGrupos, [Grupo|ListaGrupos]) :- not(member(39,ListaVisitados)),sacarGrupo(Grid, 39, Grupo),length(Grupo,Long),Long>1.
+sacarGruposGrilla(_Grid, 39,_ListaVisitados, ListaGrupos, ListaGrupos).
+sacarGruposGrilla(Grid, Posicion,ListaVisitados, ListaGrupos, ListaDeGruposFinal) :- not(member(Posicion,ListaVisitados)),sacarGrupo(Grid, Posicion, Grupo),length(Grupo,Long),Long>1, Posicion2 is Posicion+1, append(ListaVisitados,ListaGrupos,ListaVisitadosAux) ,sacarGruposGrilla(Grid, Posicion2,ListaVisitadosAux,[Grupo|ListaGrupos],ListaDeGruposFinal).
+sacarGruposGrilla(Grid, Posicion,ListaVisitados, ListaGrupos, ListaDeGruposFinal) :- Posicion2 is Posicion+1, sacarGruposGrilla(Grid, Posicion2,ListaVisitados, ListaGrupos, ListaDeGruposFinal).
 
 
 /**
@@ -339,7 +324,7 @@ procesarEliminacionGrupos(Grid,[ListaCabeza|RestoListas],GridRes):-max_list(List
  * Primero se sacan todos los grupos de la grilla y despues se procesan.
  * 
  **/ 
-borrarGrupos(Grid,GridRes):-sacarGruposGrilla(Grid,0,[],ListaGrupos),procesarEliminacionGrupos(Grid,ListaGrupos,GridRes).
+borrarGrupos(Grid,GridRes):-sacarGruposGrilla(Grid,0,[],[],ListaGrupos),procesarEliminacionGrupos(Grid,ListaGrupos,GridRes).
 
 
 /**
@@ -347,4 +332,4 @@ borrarGrupos(Grid,GridRes):-sacarGruposGrilla(Grid,0,[],ListaGrupos),procesarEli
  * RGrid es una lista con los pasos que hace la grilla para aplicar el powerUp
  * El numero 0 en las celdas reperesenta una celda vacia.
  **/ 
-powerUp(Grid,RGrids):-borrarGrupos(Grid,GridA),grillasConGravedad(GridA,[GridA],RGrids).
+powerUp(Grid,NumOfColumns,NumOfRows,RGrids):-borrarGrupos(Grid,GridA),grillasConGravedad(GridA,[GridA],NumOfColumns,NumOfRows,RGrids).
