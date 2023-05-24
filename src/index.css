@@ -30,16 +30,30 @@ body {
   color:white;
 }
 
-.botonPowerUp{
+.btn_ColapsarIguales{
   display: flex;
   justify-content: center;
   align-items: center;
   padding-right: 80px;
 }
 
-.botonPowerUp .square{
+.btn_ColapsarIguales .square{
   height: 60px;
   width: 200px;
+}
+
+.btn_AyudaMovidaMaxima{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-right: 80px;
+}
+
+.btn_AyudaMovidaMaxima .square{
+  height: 60px;
+  width: 180px;
+  padding-left:20px ;
+  margin-left: 20px;
 }
 
 

@@ -1,15 +1,15 @@
 import React from "react";
 import Square from "./Square";
-import imagenPowerUp from "./Assets/PowerUp.png"
 
 
 
-function Button({onClickEvent,Estado}){
+
+function Button({onClickEvent,Estado,Text,rutaImagen}){
     return(
-    <div className="botonPowerUp">
-        <img src={imagenPowerUp} alt="Imagen Power-Up" style={{width: '10%' } } />
+    <div className={"btn_"+Text.split(' ').join('')}>
+        <img src={rutaImagen} alt={"Imagen "+Text} style={{width: '10%' } } />
        <Square
-            value={Estado ?"Procesando...":"Colapsar Iguales" }
+            value={Estado ?"Procesando...":Text }
             onClick={Estado ? null:onClickEvent}
        />  
     </div>

@@ -1,7 +1,8 @@
 :- module(proylcc, 
 	[  
 		join/5,
-        powerUp/4
+        powerUp/4,
+        ayudaMovidaMaxima/3
 	]).
 
 
@@ -333,3 +334,216 @@ borrarGrupos(Grid,GridRes):-sacarGruposGrilla(Grid,0,[],[],ListaGrupos),procesar
  * El numero 0 en las celdas reperesenta una celda vacia.
  **/ 
 powerUp(Grid,NumOfColumns,NumOfRows,RGrids):-borrarGrupos(Grid,GridA),grillasConGravedad(GridA,[GridA],NumOfColumns,NumOfRows,RGrids).
+
+
+
+/**
+ * Intento Nuevos Boosters
+ * */
+
+buscarMayoresIndices(Lista,ListaIndices):-max_list(Lista,Mayor),findall(Indice,indice(Mayor,Lista,Indice),ListaIndices).
+
+mismaPotencia(X,Y,_Base):-X =:= Y.
+
+potenciaSiguiente(X, Y, Pow) :-
+    Pow =\= 1,        % Asegura que Pow no sea 1 (evita la repetición infinita)
+    PowX is Y * Pow,  % Calcula la potencia siguiente de X
+    PowX =:= X.       % Comprueba si la potencia siguiente de Y es igual a X
+    
+
+
+% Regla para buscar el índice de un elemento en una lista
+indice(Elemento, Lista, Indice) :-
+    indice(Elemento, Lista, 0, Indice).
+
+% Caso base: el elemento se encuentra al principio de la lista
+indice(Elemento, [Elemento|_], Indice, Indice).
+
+% Caso recursivo: el elemento no está al principio de la lista
+indice(Elemento, [_|Resto], IndiceActual, Indice) :-
+    IndiceSiguiente is IndiceActual + 1,
+    indice(Elemento, Resto, IndiceSiguiente, Indice).
+
+cumpleCondicionesCamino(Pos,PosSiguiente,ListaVisitados):-
+    length(ListaVisitados,Long),Long<2,mismaPotencia(Pos,PosSiguiente,2).
+cumpleCondicionesCamino(Pos,PosSiguiente,ListaVisitados):-length(ListaVisitados,Long),Long>=1,mismaPotencia(Pos,PosSiguiente,2).
+cumpleCondicionesCamino(Pos,PosSiguiente,ListaVisitados):-length(ListaVisitados,Long),Long>=1,potenciaSiguiente(Pos,PosSiguiente,2).
+                                
+
+adyacenteCaminoArriba(Grid, ElemInPos, Pos, ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
+    PosAdyacenteSuperior is Pos - 5,
+    PosAdyacenteSuperior >= 0,
+    not(member(PosAdyacenteSuperior, ListaVisitados)),
+    nth0(PosAdyacenteSuperior, Grid, Achequear),
+    cumpleCondicionesCamino(Achequear,ElemInPos,ListaVisitados),
+    calcularSuma(Grid, [PosAdyacenteSuperior|ListaVisitados], ResSuma),
+    (
+        (
+            ResSuma >= ValorCaminoMax,
+            buscarCamino(Grid, Achequear, PosAdyacenteSuperior, [PosAdyacenteSuperior|ListaVisitados], [PosAdyacenteSuperior|ListaVisitados], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
+        );
+        (
+            buscarCamino(Grid, Achequear, PosAdyacenteSuperior, [PosAdyacenteSuperior|ListaVisitados], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
+        )
+    ).
+adyacenteCaminoArriba(_Grid, _ElemInPos, _Pos,_ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
+
+adyacenteCaminoAbajo(Grid, ElemInPos, Pos, ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
+    PosAdyacenteInferior is Pos + 5,
+    PosAdyacenteInferior<40,
+    not(member(PosAdyacenteInferior, ListaVisitados)),
+    nth0(PosAdyacenteInferior, Grid, Achequear),
+    cumpleCondicionesCamino(Achequear,ElemInPos,ListaVisitados),
+    calcularSuma(Grid, [PosAdyacenteInferior|ListaVisitados], ResSuma),
+    (
+        (
+            ResSuma >= ValorCaminoMax,
+            buscarCamino(Grid, Achequear, PosAdyacenteInferior, [PosAdyacenteInferior|ListaVisitados], [PosAdyacenteInferior|ListaVisitados], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
+        );
+        (
+            buscarCamino(Grid, Achequear, PosAdyacenteInferior, [PosAdyacenteInferior|ListaVisitados], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
+        )
+    ).
+adyacenteCaminoAbajo(_Grid, _ElemInPos, _Pos,_ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
+
+adyacenteCaminoIzquierda(Grid, ElemInPos, Pos, ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
+    PosAdyacenteIzq is Pos - 1,
+    PosAdyacenteIzq>=0,
+    not(member(PosAdyacenteIzq, ListaVisitados)),
+    nth0(PosAdyacenteIzq, Grid, Achequear),
+    cumpleCondicionesCamino(Achequear,ElemInPos,ListaVisitados),mismaFila(Pos, PosAdyacenteIzq),
+    calcularSuma(Grid, [PosAdyacenteIzq|ListaVisitados], ResSuma),
+    (
+        (
+            ResSuma >= ValorCaminoMax,
+            buscarCamino(Grid, Achequear, PosAdyacenteIzq, [PosAdyacenteIzq|ListaVisitados], [PosAdyacenteIzq|ListaVisitados], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
+        );
+        (
+            buscarCamino(Grid, Achequear, PosAdyacenteIzq, [PosAdyacenteIzq|ListaVisitados], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
+        )
+    ).
+adyacenteCaminoIzquierda(_Grid, _ElemInPos, _Pos,_ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
+
+
+adyacenteCaminoDerecha(Grid, ElemInPos, Pos, ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
+    PosAdyacenteDer is Pos + 1,
+    PosAdyacenteDer<40,
+    not(member(PosAdyacenteDer, ListaVisitados)),
+    nth0(PosAdyacenteDer, Grid, Achequear),
+    cumpleCondicionesCamino(Achequear,ElemInPos,ListaVisitados),mismaFila(Pos, PosAdyacenteDer),
+    calcularSuma(Grid, [PosAdyacenteDer|ListaVisitados], ResSuma),
+    (
+        (
+            ResSuma >= ValorCaminoMax,
+            buscarCamino(Grid, Achequear, PosAdyacenteDer, [PosAdyacenteDer|ListaVisitados], [PosAdyacenteDer|ListaVisitados], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
+        );
+        (
+            buscarCamino(Grid, Achequear, PosAdyacenteDer, [PosAdyacenteDer|ListaVisitados], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
+        )
+    ).
+adyacenteCaminoDerecha(_Grid, _ElemInPos, _Pos,_ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
+
+
+adyacenteCaminoIzquierdaAbajo(Grid, ElemInPos, Pos, ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
+    PosAdyInferiorIzq is Pos+4,
+    PosAdyInferiorIzq<40,
+    not(member(PosAdyInferiorIzq, ListaVisitados)),
+    nth0(PosAdyInferiorIzq, Grid, Achequear),
+   cumpleCondicionesCamino(Achequear,ElemInPos,ListaVisitados),filaAbajo(Pos,PosAdyInferiorIzq),
+    calcularSuma(Grid, [PosAdyInferiorIzq|ListaVisitados], ResSuma),
+    (
+        (
+            ResSuma >= ValorCaminoMax,
+            buscarCamino(Grid, Achequear, PosAdyInferiorIzq, [PosAdyInferiorIzq|ListaVisitados], [PosAdyInferiorIzq|ListaVisitados], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
+        );
+        (
+            buscarCamino(Grid, Achequear, PosAdyInferiorIzq, [PosAdyInferiorIzq|ListaVisitados], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
+        )
+    ).
+adyacenteCaminoIzquierdaAbajo(_Grid, _ElemInPos, _Pos,_ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
+
+
+adyacenteCaminoIzquierdaArriba(Grid, ElemInPos, Pos, ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
+    PosAdySuperiorIzq is Pos-4,
+    PosAdySuperiorIzq>=0,
+    not(member(PosAdySuperiorIzq, ListaVisitados)),
+    nth0(PosAdySuperiorIzq, Grid, Achequear),
+    cumpleCondicionesCamino(Achequear,ElemInPos,ListaVisitados),filaArriba(Pos,PosAdySuperiorIzq),
+    calcularSuma(Grid, [PosAdySuperiorIzq|ListaVisitados], ResSuma),
+    (
+        (
+            ResSuma >= ValorCaminoMax,
+            buscarCamino(Grid, Achequear, PosAdySuperiorIzq, [PosAdySuperiorIzq|ListaVisitados], [PosAdySuperiorIzq|ListaVisitados], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
+        );
+        (
+            buscarCamino(Grid, Achequear, PosAdySuperiorIzq, [PosAdySuperiorIzq|ListaVisitados], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
+        )
+    ).
+adyacenteCaminoIzquierdaArriba(_Grid, _ElemInPos, _Pos,_ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
+
+adyacenteCaminoDerechaArriba(Grid, ElemInPos, Pos, ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
+    PosAdyInferiorDer is Pos-6,
+    PosAdyInferiorDer>=0,
+    not(member(PosAdyInferiorDer, ListaVisitados)),
+    nth0(PosAdyInferiorDer, Grid, Achequear),
+    cumpleCondicionesCamino(Achequear,ElemInPos,ListaVisitados),filaArriba(Pos,PosAdyInferiorDer),
+    calcularSuma(Grid, [PosAdyInferiorDer|ListaVisitados], ResSuma),
+    (
+        (
+            ResSuma >= ValorCaminoMax,
+            buscarCamino(Grid, Achequear, PosAdyInferiorDer, [PosAdyInferiorDer|ListaVisitados], [PosAdyInferiorDer|ListaVisitados], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
+        );
+        (
+            buscarCamino(Grid, Achequear, PosAdyInferiorDer, [PosAdyInferiorDer|ListaVisitados], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
+        )
+    ).
+adyacenteCaminoDerechaArriba(_Grid, _ElemInPos, _Pos,_ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
+
+adyacenteCaminoDerechaAbajo(Grid, ElemInPos, Pos, ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
+    PosAdySuperiorDer is Pos+6,
+    PosAdySuperiorDer>=0,
+    not(member(PosAdySuperiorDer, ListaVisitados)),
+    nth0(PosAdySuperiorDer, Grid, Achequear),
+    cumpleCondicionesCamino(Achequear,ElemInPos,ListaVisitados),filaAbajo(Pos,PosAdySuperiorDer),
+    calcularSuma(Grid, [PosAdySuperiorDer|ListaVisitados], ResSuma),
+    (
+        (
+            ResSuma >= ValorCaminoMax,
+            buscarCamino(Grid, Achequear, PosAdySuperiorDer, [PosAdySuperiorDer|ListaVisitados], [PosAdySuperiorDer|ListaVisitados], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
+        );
+        (
+            buscarCamino(Grid, Achequear, PosAdySuperiorDer, [PosAdySuperiorDer|ListaVisitados], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
+        )
+    ).
+adyacenteCaminoDerechaAbajo(_Grid, _ElemInPos, _Pos,_ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
+
+
+buscarCamino(Grid, ElemInPos, Pos, ListaVisitados, CaminoMaximo,ValorCaminoMaximo ,CaminoEncontrado7,ValorCaminoEncontrado7) :-
+    adyacenteCaminoDerechaAbajo(Grid, ElemInPos, Pos,ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoEncontrado,ValorCaminoEncontrado),adyacenteCaminoAbajo(Grid, ElemInPos, Pos,ListaVisitados,CaminoEncontrado,ValorCaminoEncontrado,CaminoEncontrado1,ValorCaminoEncontrado1),adyacenteCaminoIzquierdaAbajo(Grid, ElemInPos, Pos,ListaVisitados,CaminoEncontrado1,ValorCaminoEncontrado1,CaminoEncontrado2,ValorCaminoEncontrado2),
+    adyacenteCaminoDerecha(Grid, ElemInPos, Pos,ListaVisitados,CaminoEncontrado2,ValorCaminoEncontrado2,CaminoEncontrado3,ValorCaminoEncontrado3), adyacenteCaminoIzquierda(Grid, ElemInPos, Pos,ListaVisitados,CaminoEncontrado3,ValorCaminoEncontrado3,CaminoEncontrado4,ValorCaminoEncontrado4),
+    adyacenteCaminoDerechaArriba(Grid, ElemInPos, Pos,ListaVisitados,CaminoEncontrado4,ValorCaminoEncontrado4,CaminoEncontrado5,ValorCaminoEncontrado5),adyacenteCaminoArriba(Grid, ElemInPos, Pos,ListaVisitados,CaminoEncontrado5,ValorCaminoEncontrado5,CaminoEncontrado6,ValorCaminoEncontrado6),adyacenteCaminoIzquierdaArriba(Grid, ElemInPos, Pos,ListaVisitados,CaminoEncontrado6,ValorCaminoEncontrado6,CaminoEncontrado7,ValorCaminoEncontrado7).
+
+mayorCaminoGrilla(Grid, [X|GrillaRestante], Indice, MayorCamino, MayorCaminoSumatoria) :-
+    IndiceAux is Indice + 1,
+    mayorCaminoGrilla(Grid, GrillaRestante, IndiceAux, MayorCaminoGrilla, ValorMayorCaminoGrilla),
+    buscarCamino(Grid, X, Indice, [Indice], [Indice], 0, MayorCaminoPos, ValorCaminoPos),
+    (   ValorCaminoPos >= ValorMayorCaminoGrilla,
+        MayorCamino = MayorCaminoPos,
+        MayorCaminoSumatoria = ValorCaminoPos
+    ;
+        MayorCamino = MayorCaminoGrilla,
+        MayorCaminoSumatoria = ValorMayorCaminoGrilla
+    ).
+mayorCaminoGrilla(Grid, [X], Indice, MayorCamino, ValorMayorCamino) :-
+    buscarCamino(Grid, X, Indice, [Indice], [Indice], 0, MayorCamino, ValorMayorCamino).
+
+
+pasarIndiceAPath(X,NumOfColumns,IndicePath):-IndiceColumna is  X mod NumOfColumns, IndiceFila is X // NumOfColumns,IndicePath=[IndiceFila,IndiceColumna]. 
+
+convertirCaminoAPath([X|Sublist],NumOfColumns,Path):-convertirCaminoAPath(Sublist,NumOfColumns,PathRecursivo),pasarIndiceAPath(X,NumOfColumns,XaPath),Path=[XaPath|PathRecursivo].
+convertirCaminoAPath([X],NumOfColumns,[XaPath]):-pasarIndiceAPath(X,NumOfColumns,XaPath).
+
+
+ayudaMovidaMaxima(Grid,NumOfColumns,Path):-mayorCaminoGrilla(Grid,Grid,0,MayorCamino,_ValorMayorCamino),reverse(MayorCamino,MayorCaminoEnOrden),convertirCaminoAPath(MayorCaminoEnOrden,NumOfColumns,Path).
+
+

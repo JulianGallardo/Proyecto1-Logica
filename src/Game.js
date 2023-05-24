@@ -4,6 +4,8 @@ import Board from './Board';
 import { joinResult} from './util';
 import Marker from './marker';
 import Button from './Button';
+import imagenColapsarIguales from "./Assets/PowerUp.png"
+import imagenAyudaMovidaMaxima from "./Assets/ayudaMovidaMaxima.png"
 
 let pengine;
 
@@ -18,7 +20,8 @@ function Game() {
   const [waiting, setWaiting] = useState(false);
   const [newBlockValue, setValue] =useState(1);
   const [btn_ColapsarIguales,setEstadoBtnColapsarIguales]=useState(false);
-
+  const [btn_AyudaMovidaMaxima,setEstadoBtnAyudaMovidaMaxima]=useState(false);
+  
 
   
   useEffect(() => {
@@ -65,6 +68,59 @@ function Game() {
       setValue(newBlockScore);
     }
   }
+
+
+
+
+
+  /**
+   * Called when the user press the AyudaMovidaMaxima button.
+   */
+  function AyudaMovidaMaxima(){
+    /*
+    Build Prolog query, which will be like:
+    ayudaMovidaMaxima([
+          64,4,64,32,16,
+          64,8,16,2,32,
+          2,4,64,64,2,
+          2,4,32,16,4,
+          16,4,16,16,16,
+          16,64,2,32,32,
+          64,2,64,32,64,
+          32,2,64,32,4
+          ],
+          NumOfColumns,Path
+        ).
+    */
+          
+        const gridS = JSON.stringify(grid);
+        const queryS = "ayudaMovidaMaxima(" + gridS + ","+numOfColumns+", Path)";
+       
+        setWaiting(true);
+        
+        
+        pengine.query(queryS, (success, response) => {
+          if (success) {
+            setEstadoBtnAyudaMovidaMaxima(true);
+            onPathChange(response['Path']);
+            console.log(response['Path']);
+            
+            setEstadoBtnAyudaMovidaMaxima(false);
+          } else {
+            setWaiting(false);
+            setEstadoBtnAyudaMovidaMaxima(false);
+          }
+         
+        });
+        
+        
+
+  }
+
+
+
+
+
 
 
   /**
@@ -187,8 +243,16 @@ function Game() {
         onDone={onPathDone}
       />
       <Button
+        Text={"Colapsar Iguales"}
         Estado={btn_ColapsarIguales}
+        rutaImagen={imagenColapsarIguales}
         onClickEvent={booster}
+      />
+      <Button
+        Text={"Ayuda Movida Maxima"}
+        rutaImagen={imagenAyudaMovidaMaxima}
+        Estado={btn_AyudaMovidaMaxima}
+        onClickEvent={AyudaMovidaMaxima}
       />
     </div>
 
