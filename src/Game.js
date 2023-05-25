@@ -117,6 +117,38 @@ function Game() {
 
   }
 
+  function AyudaMaximosIgualesAdyacentes(){
+    /*
+    Build Prolog query, which will be like:
+    ayudaMaximosIgualesAdyacentes([
+          64,4,64,32,16,
+          64,8,16,2,32,
+          2,4,64,64,2,
+          2,4,32,16,4,
+          16,4,16,16,16,
+          16,64,2,32,32,
+          64,2,64,32,64,
+          32,2,64,32,4
+          ],
+          NumOfColumns,NumOfRows,Path
+        ).
+    */
+          
+        const gridS = JSON.stringify(grid);
+        const queryS = "ayudaMaximosIgualesAdyacentes(" + gridS + ","+numOfColumns+","+numOfRows+", Path)";
+        setWaiting(true);
+        pengine.query(queryS, (success, response) => {
+          if (success) {
+            onPathChange(response['Path']);
+            setWaiting(false);
+          } else {
+            setWaiting(false);
+            
+          }
+         
+        });
+    }
+
 
 
 
@@ -253,6 +285,12 @@ function Game() {
         rutaImagen={imagenAyudaMovidaMaxima}
         Estado={btn_AyudaMovidaMaxima}
         onClickEvent={AyudaMovidaMaxima}
+      />
+      <Button
+        Text={"Ayuda máximos iguales adyacentes"}
+        rutaImagen={imagenAyudaMovidaMaxima}
+        
+        onClickEvent={AyudaMaximosIgualesAdyacentes}
       />
     </div>
 
