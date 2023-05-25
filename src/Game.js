@@ -94,7 +94,7 @@ function Game() {
     */
           
         const gridS = JSON.stringify(grid);
-        const queryS = "ayudaMovidaMaxima(" + gridS + ","+numOfColumns+", Path)";
+        const queryS = "ayudaMovidaMaxima(" + gridS + ","+numOfColumns+","+numOfRows+", Path)";
        
         setWaiting(true);
         
