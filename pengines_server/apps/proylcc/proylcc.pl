@@ -183,8 +183,6 @@ grillasConGravedad(Grid,ListaInicial,_NumOfColumns,_NumOfRows,ListaInicial):-not
 filaPos(Pos,0):-Pos<5,Pos>=0.
 filaPos(Pos,Fila):-PosAux is Pos-5,Pos>=0,filaPos(PosAux,FilaAnterior),Fila is FilaAnterior+1.
 
-
-
 /**
  * mismaFila(+Pos1,+Pos2)
  * Devuelve true si Pos1 y Pos2 son de la misma fila, sino false.
@@ -489,12 +487,13 @@ buscarCamino2(Grid, ElemInPos, Pos,NumOfColumns,NumOfRows, ListaVisitados, Camin
 mayorCaminoGrilla2(Grid, [X|GrillaRestante], Indice, NumOfColumns,NumOfRows, MayorCamino, MayorCaminoSumatoria) :-
         IndiceAux is Indice + 1,
         mayorCaminoGrilla2(Grid, GrillaRestante, IndiceAux,NumOfColumns,NumOfRows, MayorCaminoGrilla, ValorMayorCaminoGrilla),
-        buscarCamino(Grid, X, Indice,NumOfColumns,NumOfRows,[Indice], [Indice], 0, MayorCaminoPos, ValorCaminoPos),
+        buscarCamino2(Grid, X, Indice,NumOfColumns,NumOfRows,[Indice], [Indice], 0, MayorCaminoPos, ValorCaminoPos),
         (   ValorCaminoPos >= ValorMayorCaminoGrilla,
             cumpleCondicionAdyacentesIguales(Grid,NumOfColumns,NumOfRows,MayorCaminoPos,ValorCaminoPos),
             MayorCamino = MayorCaminoPos,
             MayorCaminoSumatoria = ValorCaminoPos
         ;
+        	cumpleCondicionAdyacentesIguales(Grid,NumOfColumns,NumOfRows,MayorCaminoPos,ValorCaminoPos),
             MayorCamino = MayorCaminoGrilla,
             MayorCaminoSumatoria = ValorMayorCaminoGrilla
         ).
@@ -506,8 +505,8 @@ ayudaMaximosIgualesAdyacentes(Grid,NumOfColumns,NumOfRows,Path):-mayorCaminoGril
 
 
 
-cumpleCondicionAdyacentesIguales(Grid,NumOfColumns,NumOfRows,Path,SumaCamino):-calcularProximaPotencia(SumaCamino, 2,PotenciaPath),reverse(Path,PathEnOrden),generarGrillaAuxiliar(Grid,PathEnOrden,PotenciaPath,UltimoElementoPathIndice,GridAuxSinGravedad),desplazamientosPosFila(GridAuxSinGravedad,UltimoElementoPathIndice,NumOfColumns,Desplazamientos),gravedadGrillaAuxiliar(GridAuxSinGravedad,NumOfColumns,NumOfRows,GridAuxConGravedad),
-    PosFinalUltimo is UltimoElementoPathIndice+5*Desplazamientos,!,hayIgualEnGrillaAdyacente(GridAuxConGravedad,PosFinalUltimo,NumOfColumns,PotenciaPath).
+cumpleCondicionAdyacentesIguales(Grid,NumOfColumns,NumOfRows,Path,SumaCamino):-calcularProximaPotencia(SumaCamino, 2,PotenciaPath),generarGrillaAuxiliar(Grid, NumOfColumns, Path,PotenciaPath,UltimoElementoPathIndice, ColumnaElementoPath, FilaElementoPath, GridAuxSinGravedad), sacarUltimaPosicionColumna(NumOfColumns, ColumnaElementoPath, NumOfRows, UltimaPosColumna), actualizarPosicion(GridAuxSinGravedad, NumOfColumns, UltimoElementoPathIndice, UltimaPosColumna, 0, PosicionActualizada), gravedadGrillaAuxiliar(GridAuxSinGravedad,NumOfColumns,NumOfRows,GridAuxConGravedad),
+    !,hayIgualEnGrillaAdyacente(GridAuxConGravedad,PosicionActualizada,NumOfColumns,PotenciaPath).
 
 
 %Adyacente abajo izquierda
@@ -527,9 +526,8 @@ hayIgualEnGrillaAdyacente(Grid,UltimoElementoPathIndice,NumOfColumns,SumaPath):-
 %Adyacente arriba derecha
 hayIgualEnGrillaAdyacente(Grid,UltimoElementoPathIndice,NumOfColumns,SumaPath):-IndiceAux is UltimoElementoPathIndice-NumOfColumns+1,IndiceAux>=0,filaArriba(UltimoElementoPathIndice,IndiceAux),nth0(IndiceAux,Grid,Elemento),Elemento = SumaPath.
 
-
-generarGrillaAuxiliar(Grid, [X],SumaPath,X, GridRes) :- reemplazarElementoI(Grid, X, SumaPath, GridRes).
-generarGrillaAuxiliar(Grid, [X|Xs],SumaPath,UltimoElementoPathIndice,GridRes) :- generarGrillaAuxiliar(Grid, Xs,SumaPath,UltimoElementoPathIndice,GridAux) ,borrarElementoI(GridAux, X, GridRes).
+generarGrillaAuxiliar(Grid, NumOfColumns, [X],SumaPath,X, ColumnaElementoPath, FilaElementoPath, GridRes) :- reemplazarElementoI(Grid, X, SumaPath, GridRes), ColumnaElementoPath is X mod NumOfColumns, FilaElementoPath is X div NumOfColumns.
+generarGrillaAuxiliar(Grid, NumOfColumns, [X|Xs],SumaPath,UltimoElementoPathIndice, ColumnaElementoPath, FilaElementoPath, GridRes) :- generarGrillaAuxiliar(Grid, NumOfColumns,Xs,SumaPath,UltimoElementoPathIndice, ColumnaElementoPath, FilaElementoPath, GridAux) ,borrarElementoI(GridAux, X, GridRes).
 
 
 
@@ -548,23 +546,12 @@ ordenarColumnasAuxiliar(Grid, Contador,NumOfColumns, Res) :- ContadorAux is Cont
         length(ResAux2,CantElementos2), Cantidad0 is CantElementos1-CantElementos2, poner0Adelante(ResAux2, Cantidad0, ResAux3),append(ResAux3,ColumnasOrdenadas,Res).
 
 
-
-zeros_after_position(List, Position, Count) :-
-  PositionAux is Position+1,
-  length(Prefix, PositionAux),
-  append(Prefix, ZerosSegment, List),
-  count_zeros(ZerosSegment, Count).
-
-count_zeros([], 0).
-count_zeros([0|T], Count) :-
-  count_zeros(T, SubCount),
-  Count is SubCount + 1.
-count_zeros([_|T], Count) :-count_zeros(T,Count).
-
-columnaPos(Pos,Columna):-Columna is (Pos mod 5).
-
-
-
-desplazamientosPosFila(Grid,PosIndice,NumOfColumns,Desplazamientos):-columnaPos(PosIndice,NumColumna),sacarColumnaI(Grid, 0, NumColumna, NumOfColumns, Columna),filaPos(PosIndice,PosColumna),zeros_after_position(Columna,PosColumna,Desplazamientos).
         
 gravedadGrillaAuxiliar(Grid,NumOfColumns,NumOfRows,Res):- ordenarColumnasAuxiliar(Grid,0,NumOfColumns, ResAux),armarGrilla(ResAux,0,NumOfRows,Res).
+
+sacarUltimaPosicionColumna(NumOfColumns, Columna, NumOfRows, Res) :- Res is ((NumOfColumns*NumOfRows)+Columna).
+
+actualizarPosicion(Grid, NumOfColumns, PosicionAnterior, UltimaPosicionColumna, 0, Res) :- PosicionAnterior =:= UltimaPosicionColumna, Res is UltimaPosicionColumna.
+actualizarPosicion(Grid, NumOfColumns, PosicionAnterior, UltimaPosicionColumna, Cont, Res) :- PosicionAnterior =:= UltimaPosicionColumna, Res is UltimaPosicionColumna+(Cont*NumOfColumns).
+actualizarPosicion(Grid, NumOfColumns, PosicionAnterior, UltimaPosicionColumna, Cont, Res) :- PosicionAnterior < UltimaPosicionColumna, nth0(UltimaPosicionColumna, Grid, ElementoUltimaPos), ElementoUltimaPos \= 0, UltimaPosicionAux is UltimaPosicionColumna-NumOfColumns, actualizarPosicion(Grid, NumOfColumns, PosicionAnterior, UltimaPosicionAux, 0, Res).
+actualizarPosicion(Grid, NumOfColumns, PosicionAnterior, UltimaPosicionColumna, Cont, Res) :- PosicionAnterior < UltimaPosicionColumna, nth0(UltimaPosicionColumna, Grid, ElementoUltimaPos), ElementoUltimaPos =:= 0,  ContAux is Cont+1, UltimaPosicionAux is UltimaPosicionColumna-NumOfColumns, actualizarPosicion(Grid, NumOfColumns, PosicionAnterior, UltimaPosicionAux, ContAux, Res).
