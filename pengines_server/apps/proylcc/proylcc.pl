@@ -152,7 +152,7 @@ ordenarColumnas(Grid, Contador,NumOfColumns, Res) :- ContadorAux is Contador+1,o
  * armarGrilla(+ColumnasConcatenadas,+Cont,+NumOfRows,-GrillaOrdenada)
  * GrillaOrdenada es la grilla armada devuelta a partir de agarrar la lista con las columnas concatenadas.
  **/
-armarGrilla(ColumnasConcatenadas,Contador, NumOfRows, FilaOrdenada):-Contador=:=NumOfRows,sacarColumnaI(ColumnasConcatenadas,0,NumOfRows,NumOfRows,FilaOrdenada).
+armarGrilla(ColumnasConcatenadas,Contador, NumOfRows, FilaOrdenada):-Contador=:=NumOfRows,sacarColumnaI(ColumnasConcatenadas,0,NumOfRows,NumOfRows,FilaOrdenada),!.
 armarGrilla(ColumnasConcatenadas, Contador,NumOfRows, GrillaOrdenada) :- ContadorAux is Contador+1,armarGrilla(ColumnasConcatenadas,ContadorAux,NumOfRows,FilasOrdenadas),
  sacarColumnaI(ColumnasConcatenadas, 0, Contador,NumOfRows, Fila), append(Fila, FilasOrdenadas, GrillaOrdenada).
 
@@ -469,7 +469,7 @@ buscarCamino2(Grid, ElemInPos, Pos,NumOfColumns,NumOfRows, ListaVisitados, Camin
     PosAdyAbajoDerecha is Pos+NumOfColumns+1,
     adyacenteCamino2(Grid, ElemInPos, Pos,PosAdyAbajoDerecha,filaAbajo,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado2,ValorCaminoEncontrado2,CaminoEncontrado3,ValorCaminoEncontrado3),
     %Adyacente izquierda
-    PosAdyIzquierda is Pos+1,
+    PosAdyIzquierda is Pos-1,
     adyacenteCamino2(Grid, ElemInPos, Pos,PosAdyIzquierda,mismaFila,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado3,ValorCaminoEncontrado3,CaminoEncontrado4,ValorCaminoEncontrado4),
     %Adyacente derecha
     PosAdyDerecha is Pos+1,
@@ -490,9 +490,11 @@ mayorCaminoGrilla2(Grid, [X|GrillaRestante], Indice, NumOfColumns,NumOfRows, May
         mayorCaminoGrilla2(Grid, GrillaRestante, IndiceAux,NumOfColumns,NumOfRows, MayorCaminoGrilla, ValorMayorCaminoGrilla),
         buscarCamino2(Grid, X, Indice,NumOfColumns,NumOfRows,[Indice], [Indice], 0, MayorCaminoPos, ValorCaminoPos),
         (   ValorCaminoPos >= ValorMayorCaminoGrilla,
+            cumpleCondicionAdyacentesIguales(Grid,NumOfColumns,NumOfRows,MayorCaminoPos,ValorCaminoPos),
             MayorCamino = MayorCaminoPos,
             MayorCaminoSumatoria = ValorCaminoPos
         ;
+        	cumpleCondicionAdyacentesIguales(Grid,NumOfColumns,NumOfRows,MayorCaminoPos,ValorCaminoPos),
             MayorCamino = MayorCaminoGrilla,
             MayorCaminoSumatoria = ValorMayorCaminoGrilla
         ).
@@ -501,3 +503,50 @@ mayorCaminoGrilla2(Grid, [X], Indice,NumOfColumns,NumOfRows, MayorCamino, ValorM
     
 
 ayudaMaximosIgualesAdyacentes(Grid,NumOfColumns,NumOfRows,Path):-mayorCaminoGrilla2(Grid,Grid,0,NumOfColumns,NumOfRows,MayorCamino,_ValorMayorCamino),reverse(MayorCamino,MayorCaminoEnOrden),convertirCaminoAPath(MayorCaminoEnOrden,NumOfColumns,Path).
+
+
+
+cumpleCondicionAdyacentesIguales(Grid,NumOfColumns,NumOfRows,Path,SumaCamino):-calcularProximaPotencia(SumaCamino, 2,PotenciaPath),generarGrillaAuxiliar(Grid,Path,PotenciaPath,UltimoElementoPathIndice,GridAuxSinGravedad),gravedadGrillaAuxiliar(GridAuxSinGravedad,NumOfColumns,NumOfRows,GridAuxConGravedad),
+    !,hayIgualEnGrillaAdyacente(GridAuxConGravedad,UltimoElementoPathIndice,NumOfColumns,PotenciaPath).
+
+
+%Adyacente abajo izquierda
+hayIgualEnGrillaAdyacente(Grid,UltimoElementoPathIndice,NumOfColumns,SumaPath):-IndiceAux is UltimoElementoPathIndice+NumOfColumns-1,filaAbajo(UltimoElementoPathIndice,IndiceAux),nth0(IndiceAux,Grid,Elemento),Elemento = SumaPath,!.
+%Adyacente abajo
+hayIgualEnGrillaAdyacente(Grid,UltimoElementoPathIndice,NumOfColumns,SumaPath):-IndiceAux is UltimoElementoPathIndice+NumOfColumns,filaAbajo(UltimoElementoPathIndice,IndiceAux),nth0(IndiceAux,Grid,Elemento),Elemento = SumaPath,!.
+%Adyacente abajo derecha
+hayIgualEnGrillaAdyacente(Grid,UltimoElementoPathIndice,NumOfColumns,SumaPath):-IndiceAux is UltimoElementoPathIndice+NumOfColumns+1,filaAbajo(UltimoElementoPathIndice,IndiceAux),nth0(IndiceAux,Grid,Elemento),Elemento = SumaPath,!.
+%Adyacente izquierda
+hayIgualEnGrillaAdyacente(Grid,UltimoElementoPathIndice,_NumOfColumns,SumaPath):-IndiceAux is UltimoElementoPathIndice-1,mismaFila(UltimoElementoPathIndice,IndiceAux),nth0(IndiceAux,Grid,Elemento),Elemento = SumaPath,!.
+%Adyacente derecha
+hayIgualEnGrillaAdyacente(Grid,UltimoElementoPathIndice,_NumOfColumns,SumaPath):-IndiceAux is UltimoElementoPathIndice+1,mismaFila(UltimoElementoPathIndice,IndiceAux),nth0(IndiceAux,Grid,Elemento),Elemento = SumaPath,!.
+%Adyacente arriba izquierda
+hayIgualEnGrillaAdyacente(Grid,UltimoElementoPathIndice,NumOfColumns,SumaPath):-IndiceAux is UltimoElementoPathIndice-NumOfColumns-1,filaArriba(UltimoElementoPathIndice,IndiceAux),nth0(IndiceAux,Grid,Elemento),Elemento = SumaPath,!.
+%Adyacente arriba
+hayIgualEnGrillaAdyacente(Grid,UltimoElementoPathIndice,NumOfColumns,SumaPath):-IndiceAux is UltimoElementoPathIndice-NumOfColumns,filaArriba(UltimoElementoPathIndice,IndiceAux),nth0(IndiceAux,Grid,Elemento),Elemento = SumaPath,!.
+%Adyacente arriba derecha
+hayIgualEnGrillaAdyacente(Grid,UltimoElementoPathIndice,NumOfColumns,SumaPath):-IndiceAux is UltimoElementoPathIndice-NumOfColumns+1,filaArriba(UltimoElementoPathIndice,IndiceAux),nth0(IndiceAux,Grid,Elemento),Elemento = SumaPath.
+
+
+generarGrillaAuxiliar(Grid, [X],SumaPath,X, GridRes) :- reemplazarElementoI(Grid, X, SumaPath, GridRes).
+generarGrillaAuxiliar(Grid, [X|Xs],SumaPath,UltimoElementoPathIndice,GridRes) :- generarGrillaAuxiliar(Grid, Xs,SumaPath,UltimoElementoPathIndice,GridAux) ,borrarElementoI(GridAux, X, GridRes).
+
+
+
+sacarDistintos0([X], [X]) :- X =\= 0.
+sacarDistintos0([X], []) :- X =:= 0.
+sacarDistintos0([X|Xs], [X|Res]) :- X =\= 0, sacarDistintos0(Xs, Res).
+sacarDistintos0([X|Xs], Res) :- X =:= 0, sacarDistintos0(Xs,Res).
+        
+poner0Adelante(Lista,0,Lista).
+poner0Adelante(Lista,Cantidad,[0|Res]):-CantidadAux is Cantidad-1,CantidadAux>=0,poner0Adelante(Lista,CantidadAux,Res). 
+        
+
+ordenarColumnasAuxiliar(Grid, 4,NumOfColumns, Res) :- sacarColumnaI(Grid, 0, 4, NumOfColumns, Columna), sacarDistintos0(Columna, ResAux2), length(Columna,CantElementos1),
+        length(ResAux2,CantElementos2), Cantidad0 is CantElementos1-CantElementos2, poner0Adelante(ResAux2, Cantidad0, Res).
+ordenarColumnasAuxiliar(Grid, Contador,NumOfColumns, Res) :- ContadorAux is Contador+1,ContadorAux<5,ordenarColumnasAuxiliar(Grid,ContadorAux,NumOfColumns,ColumnasOrdenadas),sacarColumnaI(Grid, 0, Contador,5, Columna), sacarDistintos0(Columna, ResAux2), length(Columna,CantElementos1),
+        length(ResAux2,CantElementos2), Cantidad0 is CantElementos1-CantElementos2, poner0Adelante(ResAux2, Cantidad0, ResAux3),append(ResAux3,ColumnasOrdenadas,Res).
+
+
+        
+gravedadGrillaAuxiliar(Grid,NumOfColumns,NumOfRows,Res):- ordenarColumnasAuxiliar(Grid,0,NumOfColumns, ResAux),armarGrilla(ResAux,0,NumOfRows,Res).
