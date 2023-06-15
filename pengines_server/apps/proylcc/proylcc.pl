@@ -140,12 +140,12 @@ reemplazarUltimo0(Lista,Lista).
 
 
 /**
-* ordenarColumnas(+Grid,+Contador,-Res)
+* ordenarColumnas(+Grid,+Contador, +NumOfColumns, -Res)
  * Res es una lista con todas las columnas de Grid concatenadas empezando de la 4 hasta la 0.
  * 
  **/
-ordenarColumnas(Grid, 4,NumOfColumns, Res) :- sacarColumnaI(Grid, 0, 4, NumOfColumns, Columna), reemplazarUltimo0(Columna,Res).
-ordenarColumnas(Grid, Contador,NumOfColumns, Res) :- ContadorAux is Contador+1,ordenarColumnas(Grid,ContadorAux,NumOfColumns,ColumnasOrdenadas),sacarColumnaI(Grid, 0, Contador,5, Columna), reemplazarUltimo0(Columna,ColumnaProcesada),append(ColumnaProcesada,ColumnasOrdenadas,Res).
+ordenarColumnas(Grid, Contador,NumOfColumns, Res) :- Contador=:=(NumOfColumns-1),sacarColumnaI(Grid, 0, Contador, NumOfColumns, Columna), reemplazarUltimo0(Columna,Res).
+ordenarColumnas(Grid, Contador,NumOfColumns, Res) :- ContadorAux is Contador+1,ordenarColumnas(Grid,ContadorAux,NumOfColumns,ColumnasOrdenadas),sacarColumnaI(Grid, 0, Contador,NumOfColumns, Columna), reemplazarUltimo0(Columna,ColumnaProcesada),append(ColumnaProcesada,ColumnasOrdenadas,Res).
 
 
 /**
@@ -274,7 +274,7 @@ adyacenteDerechaArriba(Grid,Elemento, Pos,Lista,ListaProcesada) :- PosAdyDerecha
 adyacenteDerechaArriba(_Grid, _Elemento, _Pos,Lista,Lista).
 
 /**
- * adyacentes(+Grid,+ElemInPos,+Pos,+Lista,+ListaAdyacentesFinal)
+ * adyacentes(+Grid,+ElemInPos,+Pos,+Lista,-ListaAdyacentesFinal)
  * ListaAdyacentesFinal es la lista procesada luego de calcular todos los adyacentes de la posicion Pos y sus adyacentes en la grilla Grid.
  * Un adyacente se guarda en la lista de adyacentes solo si el elemento en la posicon adyacente es igual al elemento ElemInPos.
  **/
@@ -330,46 +330,42 @@ borrarGrupos(Grid,GridRes):-sacarGruposGrilla(Grid,0,[],[],ListaGrupos),procesar
 
 
 /**
- * powerUp(+Grid,-RGrid)
+ * powerUp(+Grid, +NumOfColumns, +NumOfRows, -RGrid)
  * RGrid es una lista con los pasos que hace la grilla para aplicar el powerUp
  * El numero 0 en las celdas reperesenta una celda vacia.
  **/ 
 powerUp(Grid,NumOfColumns,NumOfRows,RGrids):-borrarGrupos(Grid,GridA),grillasConGravedad(GridA,[GridA],NumOfColumns,NumOfRows,RGrids).
 
 
+/**
+ * Empieza ayuda movida máxima
+ **/ 
 
 /**
- * Intento Nuevos Boosters
- * */
-
-buscarMayoresIndices(Lista,ListaIndices):-max_list(Lista,Mayor),findall(Indice,indice(Mayor,Lista,Indice),ListaIndices).
-
+ * mismaPotencia(+Elemento1, +Elemento2, +Base)
+ **/ 
 mismaPotencia(X,Y,_Base):-X =:= Y.
 
+/**
+ * potenciaSiguiente(+Elemento1, +Elemento2, +Potencia)
+ **/ 
 potenciaSiguiente(X, Y, Pow) :-
     Pow =\= 1,        % Asegura que Pow no sea 1 (evita la repetición infinita)
     PowX is Y * Pow,  % Calcula la potencia siguiente de X
     PowX =:= X.       % Comprueba si la potencia siguiente de Y es igual a X
     
-
-% Regla para buscar el índice de un elemento en una lista
-indice(Elemento, Lista, Indice) :-
-    indice(Elemento, Lista, 0, Indice).
-
-% Caso base: el elemento se encuentra al principio de la lista
-indice(Elemento, [Elemento|_], Indice, Indice).
-
-% Caso recursivo: el elemento no está al principio de la lista
-indice(Elemento, [_|Resto], IndiceActual, Indice) :-
-    IndiceSiguiente is IndiceActual + 1,
-    indice(Elemento, Resto, IndiceSiguiente, Indice).
-
+/**
+ * potenciaSiguiente(+PosicionActual, +PosicionSiguiente, +ListaVisitados)
+ **/ 
 cumpleCondicionesCamino(Pos,PosSiguiente,ListaVisitados):-
     length(ListaVisitados,Long),Long=:=1,mismaPotencia(Pos,PosSiguiente,2).
 cumpleCondicionesCamino(Pos,PosSiguiente,ListaVisitados):-length(ListaVisitados,Long),Long>1,mismaPotencia(Pos,PosSiguiente,2).
 cumpleCondicionesCamino(Pos,PosSiguiente,ListaVisitados):-length(ListaVisitados,Long),Long>1,potenciaSiguiente(Pos,PosSiguiente,2).
                                 
-
+/**
+ * potenciaSiguiente(+Grid, +Elemento, +PosicionElemento, +PosicionAdyacente, +NumOfColumns, +NumOfRows, +ListaVisitados, +CaminoMaximo, +ValorCaminoMaximo, -CaminoEncontrado, -ValorCaminoEncontrado)
+ * 
+ **/ 
 adyacenteCamino(Grid, ElemInPos, Pos,PosAdy,Condicion, NumOfColumns,NumOfRows,ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
     PosAdy>=0,
     PosAdy<(NumOfColumns*NumOfRows)-1,
