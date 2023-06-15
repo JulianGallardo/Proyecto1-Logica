@@ -21,7 +21,7 @@ function Game() {
   const [newBlockValue, setValue] =useState(1);
   const [btn_ColapsarIguales,setEstadoBtnColapsarIguales]=useState(false);
   const [btn_AyudaMovidaMaxima,setEstadoBtnAyudaMovidaMaxima]=useState(false);
-  
+  const [btn_AyudaMaximosIgualesAdyacentes,setEstadoBtnAyudaMaximosIgualesAdyacentes]=useState(false);
 
   
   useEffect(() => {
@@ -54,9 +54,6 @@ function Game() {
     }
     actualizarValorNuevoBloque(newPath);
     setPath(newPath);
-    
-
-    console.log(JSON.stringify(newPath));
   }
 
 /**
@@ -103,8 +100,6 @@ function Game() {
           if (success) {
             setEstadoBtnAyudaMovidaMaxima(true);
             onPathChange(response['Path']);
-            console.log(response['Path']);
-            
             setEstadoBtnAyudaMovidaMaxima(false);
           } else {
             setWaiting(false);
@@ -137,13 +132,15 @@ function Game() {
         const gridS = JSON.stringify(grid);
         const queryS = "ayudaMaximosIgualesAdyacentes(" + gridS + ","+numOfColumns+","+numOfRows+", Path)";
         setWaiting(true);
+        setEstadoBtnAyudaMaximosIgualesAdyacentes(true);
         pengine.query(queryS, (success, response) => {
           if (success) {
             onPathChange(response['Path']);
             setWaiting(false);
+            setEstadoBtnAyudaMaximosIgualesAdyacentes(false);
           } else {
             setWaiting(false);
-            
+            setEstadoBtnAyudaMaximosIgualesAdyacentes(false);
           }
          
         });
@@ -184,7 +181,6 @@ function Game() {
         pengine.query(queryS, (success, response) => {
           if (success) {
             setEstadoBtnColapsarIguales(true);
-            console.log(btn_ColapsarIguales);
             animateEffect(response['RGrids']);
           } else {
             setWaiting(false);
@@ -193,7 +189,7 @@ function Game() {
          
         });
         
-        console.log(btn_ColapsarIguales);
+        
 
   }
 
@@ -275,21 +271,23 @@ function Game() {
         onDone={onPathDone}
       />
       <Button
+        className={"ColapsarIguales"}
         Text={"Colapsar Iguales"}
         Estado={btn_ColapsarIguales}
         rutaImagen={imagenColapsarIguales}
         onClickEvent={booster}
       />
       <Button
+        className={"AyudaMovidaMaxima"}
         Text={"Ayuda Movida Maxima"}
         rutaImagen={imagenAyudaMovidaMaxima}
         Estado={btn_AyudaMovidaMaxima}
         onClickEvent={AyudaMovidaMaxima}
       />
       <Button
+        className={"AyudaMaximosIguales"}
         Text={"Ayuda máximos iguales adyacentes"}
         rutaImagen={imagenAyudaMovidaMaxima}
-        
         onClickEvent={AyudaMaximosIgualesAdyacentes}
       />
     </div>
