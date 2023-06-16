@@ -337,6 +337,9 @@ borrarGrupos(Grid,GridRes):-sacarGruposGrilla(Grid,0,[],[],ListaGrupos),procesar
 powerUp(Grid,NumOfColumns,NumOfRows,RGrids):-borrarGrupos(Grid,GridA),grillasConGravedad(GridA,[GridA],NumOfColumns,NumOfRows,RGrids).
 
 
+
+
+
 /**
  * Empieza ayuda movida máxima
  **/ 
@@ -348,19 +351,21 @@ mismaPotencia(X,Y,_Base):-X =:= Y.
 
 /**
  * potenciaSiguiente(+Elemento1, +Elemento2, +Potencia)
+ * Verifica si X es la potencia siguiente de Y
  **/ 
 potenciaSiguiente(X, Y, Pow) :-
     Pow =\= 1,        % Asegura que Pow no sea 1 (evita la repetición infinita)
-    PowX is Y * Pow,  % Calcula la potencia siguiente de X
-    PowX =:= X.       % Comprueba si la potencia siguiente de Y es igual a X
+    PowY is Y * Pow,  % Calcula la potencia siguiente de X
+    PowY =:= X.       % Comprueba si la potencia siguiente de Y es igual a X
     
 /**
- * cumpleCondicionesCamino(+PosicionActual, +PosicionSiguiente, +CaminoActual)
+ * cumpleCondicionesCamino(+PosicionSiguiente, +PosicionActual, +CaminoActual)
+ * Verifica si la PosicionSiguiente puede agregarse a el CaminoActual 
  **/ 
-cumpleCondicionesCamino(Pos,PosSiguiente,CaminoActual):-
-    length(CaminoActual,Long),Long=:=1,mismaPotencia(Pos,PosSiguiente,2).
-cumpleCondicionesCamino(Pos,PosSiguiente,CaminoActual):-length(CaminoActual,Long),Long>1,mismaPotencia(Pos,PosSiguiente,2).
-cumpleCondicionesCamino(Pos,PosSiguiente,CaminoActual):-length(CaminoActual,Long),Long>1,potenciaSiguiente(Pos,PosSiguiente,2).
+cumpleCondicionesCamino(PosicionSiguiente,PosActual,CaminoActual):-
+    length(CaminoActual,Long),Long=:=1,mismaPotencia(PosicionSiguiente,PosActual,2). %Caso inicio de Camino, camino de 1 elemento, ambos tienen que tener los mismos elementos.
+cumpleCondicionesCamino(PosicionSiguiente,PosActual,CaminoActual):-length(CaminoActual,Long),Long>1,mismaPotencia(PosicionSiguiente,PosActual,2). %Camino de más de 1 elemento, ambos tienen que tener los mismos elementos.
+cumpleCondicionesCamino(PosicionSiguiente,PosActual,CaminoActual):-length(CaminoActual,Long),Long>1,potenciaSiguiente(PosicionSiguiente,PosActual,2).%Camino de más de 1 elemento, PosSigueinte es la potencia siguiente de PosActual
                                 
 /**
  * adyacenteCamino(+Grid, +Elemento, +PosicionElemento, +PosicionAdyacente, +Condicion, +NumOfColumns, +NumOfRows, +CaminoActual, +CaminoMaximo, +ValorCaminoMaximo, -CaminoEncontrado, -ValorCaminoEncontrado)
@@ -375,7 +380,7 @@ cumpleCondicionesCamino(Pos,PosSiguiente,CaminoActual):-length(CaminoActual,Long
  **/ 
 adyacenteCamino(Grid, ElemInPos, Pos,PosAdy,Condicion, NumOfColumns,NumOfRows,CaminoActual, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
     PosAdy>=0,
-    PosAdy<(NumOfColumns*NumOfRows)-1,
+    PosAdy<(NumOfColumns*NumOfRows),
     not(member(PosAdy, CaminoActual)),
     nth0(PosAdy, Grid, ElementoAdyacente),
     cumpleCondicionesCamino(ElementoAdyacente,ElemInPos,CaminoActual),call(Condicion,Pos,PosAdy),
@@ -428,10 +433,10 @@ buscarCamino(Grid, ElemInPos, Pos,NumOfColumns,NumOfRows, ListaVisitados, Camino
     adyacenteCamino(Grid, ElemInPos, Pos,PosAdyArribaDerecha,filaArriba,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado7,ValorCaminoEncontrado7,CaminoEncontrado8,ValorCaminoEncontrado8).
 
 /**
- * mayorCaminoGrilla(+Grid, +GridAuxiliar, +IndiceElemento, +NumOfColumns, +NumOfRows, +MayorCamino, +MayorCaminoSumatoria)
+ * mayorCaminoGrilla(+Grid, +GridAuxiliar, +IndiceElemento, +NumOfColumns, +NumOfRows, -MayorCamino, -MayorCaminoSumatoria)
  * GridAuxiliar una copia de la grilla, la cual iremos reduciendo a medida que hagamos las llamadas recursivas, para no alterar la grilla original,
  * de esta forma recorriendola indice por indice
- * MayorCamino es una lista que contiene el mayor camino de todos los analizados
+ * MayorCamino es una lista que contiene los elementos del mayor camino de todos los analizados
  * MayorCaminoSumatoria es la sumatoria resultante de dicho camino
  * 
  **/ 
@@ -482,24 +487,24 @@ ayudaMovidaMaxima(Grid,NumOfColumns,NumOfRows,Path):-mayorCaminoGrilla(Grid,Grid
  * ValorCaminoEncontrado es el valor de dicho camino
  * 
  **/ 
-adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdy,Condicion, NumOfColumns,NumOfRows,ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
+adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdy,Condicion, NumOfColumns,NumOfRows,CaminoActual, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
     PosAdy>=0,
-    PosAdy<(NumOfColumns*NumOfRows)-1,
-    not(member(PosAdy, ListaVisitados)),
+    PosAdy<(NumOfColumns*NumOfRows),
+    not(member(PosAdy, CaminoActual)),
     nth0(PosAdy, Grid, Achequear),
-    cumpleCondicionesCamino(Achequear,ElemInPos,ListaVisitados),call(Condicion,Pos,PosAdy),
-    calcularSuma(Grid, [PosAdy|ListaVisitados], ResSuma),
+    cumpleCondicionesCamino(Achequear,ElemInPos,CaminoActual),call(Condicion,Pos,PosAdy),
+    calcularSuma(Grid, [PosAdy|CaminoActual], ResSuma),
     (
         (
             ResSuma >= ValorCaminoMax,
-            cumpleCondicionMAdyacentesIguales(Grid,NumOfColumns,NumOfRows,[PosAdy|ListaVisitados],ResSuma),
-            buscarCaminoMAdyacentesIguales(Grid, Achequear, PosAdy,NumOfColumns,NumOfRows, [PosAdy|ListaVisitados], [PosAdy|ListaVisitados], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
+            cumpleCondicionMAdyacentesIguales(Grid,NumOfColumns,NumOfRows,[PosAdy|CaminoActual],ResSuma),
+            buscarCaminoMAdyacentesIguales(Grid, Achequear, PosAdy,NumOfColumns,NumOfRows, [PosAdy|CaminoActual], [PosAdy|CaminoActual], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
         );
         (
-            buscarCaminoMAdyacentesIguales(Grid, Achequear, PosAdy,NumOfColumns,NumOfRows, [PosAdy|ListaVisitados], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
+            buscarCaminoMAdyacentesIguales(Grid, Achequear, PosAdy,NumOfColumns,NumOfRows, [PosAdy|CaminoActual], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
         )
     ).
-adyacenteCaminoParaMAdyacentesIguales(_, _ElemInPos, _Pos,_PosAdy,_Condicion, _NumOfColumns,_NumOfRows, _ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
+adyacenteCaminoParaMAdyacentesIguales(_, _ElemInPos, _Pos,_PosAdy,_Condicion, _NumOfColumns,_NumOfRows, _CaminoActual,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
 
 /**
  * buscarCaminoMAdyacentesIguales(+Grid, +GridAuxiliar, +PosicionElemento, +NumOfColumns, +NumOfRows, +MayorCamino, +MayorCaminoSumatoria)
@@ -508,39 +513,39 @@ adyacenteCaminoParaMAdyacentesIguales(_, _ElemInPos, _Pos,_PosAdy,_Condicion, _N
  * MayorCaminoSumatoria es la sumatoria resultante de dicho camino
  * 
  **/ 
-buscarCaminoMAdyacentesIguales(Grid, ElemInPos, Pos,NumOfColumns,NumOfRows, ListaVisitados, CaminoMaximo,ValorCaminoMaximo ,CaminoEncontrado8,ValorCaminoEncontrado8) :-
+buscarCaminoMAdyacentesIguales(Grid, ElemInPos, Pos,NumOfColumns,NumOfRows, CaminoActual, CaminoMaximo,ValorCaminoMaximo ,CaminoEncontrado8,ValorCaminoEncontrado8) :-
     %Adyacente abajo izquierda
     PosAdyAbajoIzquierda is Pos+NumOfColumns-1,
-    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyAbajoIzquierda,filaAbajo,NumOfColumns,NumOfRows,ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoEncontrado1,ValorCaminoEncontrado1),
+    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyAbajoIzquierda,filaAbajo,NumOfColumns,NumOfRows,CaminoActual,CaminoMaximo,ValorCaminoMaximo,CaminoEncontrado1,ValorCaminoEncontrado1),
     %Adyacente abajo
     PosAdyAbajo is Pos+NumOfColumns,
-    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyAbajo,filaAbajo,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado1,ValorCaminoEncontrado1,CaminoEncontrado2,ValorCaminoEncontrado2),
+    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyAbajo,filaAbajo,NumOfColumns,NumOfRows,CaminoActual,CaminoEncontrado1,ValorCaminoEncontrado1,CaminoEncontrado2,ValorCaminoEncontrado2),
     %Adyacente abajo derecha
     PosAdyAbajoDerecha is Pos+NumOfColumns+1,
-    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyAbajoDerecha,filaAbajo,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado2,ValorCaminoEncontrado2,CaminoEncontrado3,ValorCaminoEncontrado3),
+    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyAbajoDerecha,filaAbajo,NumOfColumns,NumOfRows,CaminoActual,CaminoEncontrado2,ValorCaminoEncontrado2,CaminoEncontrado3,ValorCaminoEncontrado3),
     %Adyacente izquierda
     PosAdyIzquierda is Pos-1,
-    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyIzquierda,mismaFila,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado3,ValorCaminoEncontrado3,CaminoEncontrado4,ValorCaminoEncontrado4),
+    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyIzquierda,mismaFila,NumOfColumns,NumOfRows,CaminoActual,CaminoEncontrado3,ValorCaminoEncontrado3,CaminoEncontrado4,ValorCaminoEncontrado4),
     %Adyacente derecha
     PosAdyDerecha is Pos+1,
-    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyDerecha,mismaFila,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado4,ValorCaminoEncontrado4,CaminoEncontrado5,ValorCaminoEncontrado5),
+    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyDerecha,mismaFila,NumOfColumns,NumOfRows,CaminoActual,CaminoEncontrado4,ValorCaminoEncontrado4,CaminoEncontrado5,ValorCaminoEncontrado5),
     %Adyacente arriba izquierda
     PosAdyArribaIzquierda is Pos-NumOfColumns-1,
-    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyArribaIzquierda,filaArriba,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado5,ValorCaminoEncontrado5,CaminoEncontrado6,ValorCaminoEncontrado6),
+    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyArribaIzquierda,filaArriba,NumOfColumns,NumOfRows,CaminoActual,CaminoEncontrado5,ValorCaminoEncontrado5,CaminoEncontrado6,ValorCaminoEncontrado6),
     %Adyacente arriba
     PosAdyArriba is Pos-NumOfColumns,
-    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyArriba,filaArriba,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado6,ValorCaminoEncontrado6,CaminoEncontrado7,ValorCaminoEncontrado7),
+    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyArriba,filaArriba,NumOfColumns,NumOfRows,CaminoActual,CaminoEncontrado6,ValorCaminoEncontrado6,CaminoEncontrado7,ValorCaminoEncontrado7),
     %Adyacente arriba derecha
     PosAdyArribaDerecha is Pos-NumOfColumns+1,
-    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyArribaDerecha,filaArriba,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado7,ValorCaminoEncontrado7,CaminoEncontrado8,ValorCaminoEncontrado8).
+    adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdyArribaDerecha,filaArriba,NumOfColumns,NumOfRows,CaminoActual,CaminoEncontrado7,ValorCaminoEncontrado7,CaminoEncontrado8,ValorCaminoEncontrado8).
 
 
 
 /**
- * mayorCaminoGrillaParaMAdyacentesIguales(+Grid, +GridAuxiliar, +IndiceElemento, +NumOfColumns, +NumOfRows, +MayorCamino, +MayorCaminoSumatoria)
+ * mayorCaminoGrillaParaMAdyacentesIguales(+Grid, +GridAuxiliar, +IndiceElemento, +NumOfColumns, +NumOfRows, -MayorCamino, -MayorCaminoSumatoria)
  * GridAuxiliar una copia de la grilla, la cual iremos reduciendo a medida que hagamos las llamadas recursivas, para no alterar la grilla original,
  * de esta forma recorriendola indice por indice
- * MayorCamino es una lista que contiene el mayor camino de todos los analizados segun las condiciones para MayorAdyacentesIguales
+ * MayorCamino es una lista que contiene los elementos del mayor camino de todos los analizados segun las condiciones para MayorAdyacentesIguales
  * MayorCaminoSumatoria es la sumatoria resultante de dicho camino
  * 
  **/ 
