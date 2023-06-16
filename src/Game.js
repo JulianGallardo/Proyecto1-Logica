@@ -131,7 +131,7 @@ function Game() {
    
         const gridS = JSON.stringify(grid);
         const queryS = "ayudaMaximosIgualesAdyacentes(" + gridS + ","+numOfColumns+","+numOfRows+", Path)";
-        if(!btn_ColapsarIguales){
+        
           setWaiting(true);
           setEstadoBtnAyudaMaximosIgualesAdyacentes(true);
           pengine.query(queryS, (success, response) => {
@@ -146,7 +146,7 @@ function Game() {
               }
             
           });
-        }
+        
     }
 
 
@@ -182,7 +182,7 @@ function Game() {
         
         
         pengine.query(queryS, (success, response) => {
-          if (success && path.length===0) {
+          if (success) {
             setEstadoBtnColapsarIguales(true);
             animateEffect(response['RGrids']);
             setWaiting(false)
@@ -278,6 +278,7 @@ function Game() {
         <Button
           className={"ColapsarIguales"}
           Text={"Colapsar Iguales"}
+          Disabled={waiting||(path.length>0)}
           Estado={btn_ColapsarIguales}
           rutaImagen={imagenColapsarIguales}
           onClickEvent={booster}
@@ -285,6 +286,7 @@ function Game() {
         <Button
           className={"AyudaMovidaMaxima"}
           Text={"Ayuda Movida Maxima"}
+          Disabled={waiting||btn_ColapsarIguales}
           rutaImagen={imagenAyudaMovidaMaxima}
           Estado={btn_AyudaMovidaMaxima}
           onClickEvent={AyudaMovidaMaxima}
@@ -292,6 +294,7 @@ function Game() {
         <Button
           className={"AyudaMaximosIguales"}
           Text={"Ayuda máximos iguales adyacentes"}
+          Disabled={waiting||btn_ColapsarIguales}
           Estado={btn_AyudaMaximosIgualesAdyacentes}
           rutaImagen={imagenMaximosIgualesAdyacentes}
           onClickEvent={AyudaMaximosIgualesAdyacentes}
