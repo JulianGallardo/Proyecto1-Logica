@@ -7,6 +7,8 @@ import Button from './Button';
 import imagenColapsarIguales from "./Assets/PowerUp.png"
 import imagenAyudaMovidaMaxima from "./Assets/ayudaMovidaMaxima.png"
 import imagenMaximosIgualesAdyacentes from "./Assets/ayudaMaximosIgualesAdyacentes.png"
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 let pengine;
 
@@ -103,6 +105,9 @@ function Game() {
             setWaiting(false);
             setEstadoBtnAyudaMovidaMaxima(false);
           } else {
+            if(response['Path'].length===1){
+              toast.error("No hay camino");
+            }
             setWaiting(false);
             setEstadoBtnAyudaMovidaMaxima(false);
           }
@@ -141,6 +146,9 @@ function Game() {
                 setWaiting(false);
                 setEstadoBtnAyudaMaximosIgualesAdyacentes(false);
               } else {
+                if(response['Path'].length===1){
+                  toast.error("No hay camino");
+                }
                 setWaiting(false);
                 setEstadoBtnAyudaMaximosIgualesAdyacentes(false);
               }
@@ -183,18 +191,17 @@ function Game() {
         
         pengine.query(queryS, (success, response) => {
           if (success) {
+            if(response['RGrids'].length===1){
+              toast.error("No hay bloques para colapsar");
+            }
             setEstadoBtnColapsarIguales(true);
             animateEffect(response['RGrids']);
             setWaiting(false)
-          } else {
+          } else { 
             setWaiting(false);
             setEstadoBtnColapsarIguales(false);
           }
-         
         });
-        
-        
-
   }
 
 
@@ -225,7 +232,7 @@ function Game() {
     setWaiting(true);
     pengine.query(queryS, (success, response) => {
       if (success) {
-        
+        mensajesExito(path.length)
         setScore(score + joinResult(path, grid, numOfColumns));
         setPath([]);
         animateEffect(response['RGrids']);
@@ -236,6 +243,33 @@ function Game() {
       }
 
     });
+  }
+
+
+  function mensajesExito(LongitudCamino){
+    if(5>LongitudCamino && LongitudCamino>2){
+      toast('Bien', {
+        icon: '👌',
+      });
+    }
+    else{
+      if(9>LongitudCamino && LongitudCamino>=5){
+          toast('Muy Bien', {
+            icon: '👽',
+          });
+      }
+      else{
+        if(12>LongitudCamino && LongitudCamino>=9)
+          toast('Excelente!', {
+            icon: '😈',
+          });
+        if(LongitudCamino>=12)
+          toast('Legendario!', {
+            icon: '🥵😈',
+          });
+
+      }
+    }
   }
 
   /**
@@ -260,6 +294,18 @@ function Game() {
   }
   return (
     <div className="game">
+      <ToastContainer
+        position="top-center"
+        autoClose={1000}
+        limit={1}
+        hideProgressBar={false}
+        newestOnTop={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className='header'>
         <Marker
           score={score}
