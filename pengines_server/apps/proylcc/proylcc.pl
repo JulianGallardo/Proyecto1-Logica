@@ -355,35 +355,51 @@ potenciaSiguiente(X, Y, Pow) :-
     PowX =:= X.       % Comprueba si la potencia siguiente de Y es igual a X
     
 /**
- * potenciaSiguiente(+PosicionActual, +PosicionSiguiente, +ListaVisitados)
+ * cumpleCondicionesCamino(+PosicionActual, +PosicionSiguiente, +CaminoActual)
  **/ 
-cumpleCondicionesCamino(Pos,PosSiguiente,ListaVisitados):-
-    length(ListaVisitados,Long),Long=:=1,mismaPotencia(Pos,PosSiguiente,2).
-cumpleCondicionesCamino(Pos,PosSiguiente,ListaVisitados):-length(ListaVisitados,Long),Long>1,mismaPotencia(Pos,PosSiguiente,2).
-cumpleCondicionesCamino(Pos,PosSiguiente,ListaVisitados):-length(ListaVisitados,Long),Long>1,potenciaSiguiente(Pos,PosSiguiente,2).
+cumpleCondicionesCamino(Pos,PosSiguiente,CaminoActual):-
+    length(CaminoActual,Long),Long=:=1,mismaPotencia(Pos,PosSiguiente,2).
+cumpleCondicionesCamino(Pos,PosSiguiente,CaminoActual):-length(CaminoActual,Long),Long>1,mismaPotencia(Pos,PosSiguiente,2).
+cumpleCondicionesCamino(Pos,PosSiguiente,CaminoActual):-length(CaminoActual,Long),Long>1,potenciaSiguiente(Pos,PosSiguiente,2).
                                 
 /**
- * potenciaSiguiente(+Grid, +Elemento, +PosicionElemento, +PosicionAdyacente, +NumOfColumns, +NumOfRows, +ListaVisitados, +CaminoMaximo, +ValorCaminoMaximo, -CaminoEncontrado, -ValorCaminoEncontrado)
+ * adyacenteCamino(+Grid, +Elemento, +PosicionElemento, +PosicionAdyacente, +Condicion, +NumOfColumns, +NumOfRows, +CaminoActual, +CaminoMaximo, +ValorCaminoMaximo, -CaminoEncontrado, -ValorCaminoEncontrado)
+ * La variable condición es el nombre de la condición que corresponde cuando llamamos al predicado. Por ejemplo, si estamos llamando al predicado con el adyacente a la posición que está debajo de la misma, la condición sera FilaAbajo y nos devolverá true en caso de que no nos hayamos caído de la grilla
+ * CaminoActual es una lista que contiene el camino que esta siendo analizado actualmente
+ * CaminoMaximo contiene el camino con la sumatoria más grande encontrado hasta ahora
+ * ValorCaminoMax contiene dicha sumatoria
+ * CaminoEncontrado es el camino resultante que devolveremos cuando terminemos de recorrer todos los posibles caminos
+ * ValorCaminoEncontrado es el valor de dicho camino
  * 
  **/ 
-adyacenteCamino(Grid, ElemInPos, Pos,PosAdy,Condicion, NumOfColumns,NumOfRows,ListaVisitados, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
+adyacenteCamino(Grid, ElemInPos, Pos,PosAdy,Condicion, NumOfColumns,NumOfRows,CaminoActual, CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado) :-
     PosAdy>=0,
     PosAdy<(NumOfColumns*NumOfRows)-1,
-    not(member(PosAdy, ListaVisitados)),
-    nth0(PosAdy, Grid, Achequear),
-    cumpleCondicionesCamino(Achequear,ElemInPos,ListaVisitados),call(Condicion,Pos,PosAdy),
-    calcularSuma(Grid, [PosAdy|ListaVisitados], ResSuma),
+    not(member(PosAdy, CaminoActual)),
+    nth0(PosAdy, Grid, ElementoAdyacente),
+    cumpleCondicionesCamino(ElementoAdyacente,ElemInPos,CaminoActual),call(Condicion,Pos,PosAdy),
+    calcularSuma(Grid, [PosAdy|CaminoActual], ResSuma),
     (
         (
             ResSuma >= ValorCaminoMax,
-            buscarCamino(Grid, Achequear, PosAdy,NumOfColumns,NumOfRows, [PosAdy|ListaVisitados], [PosAdy|ListaVisitados], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
+            buscarCamino(Grid, ElementoAdyacente, PosAdy,NumOfColumns,NumOfRows, [PosAdy|CaminoActual], [PosAdy|CaminoActual], ResSuma, CaminoEncontrado, ValorCaminoEncontrado)
         );
         (
-            buscarCamino(Grid, Achequear, PosAdy,NumOfColumns,NumOfRows, [PosAdy|ListaVisitados], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
+            buscarCamino(Grid, ElementoAdyacente, PosAdy,NumOfColumns,NumOfRows, [PosAdy|CaminoActual], CaminoMaximo, ValorCaminoMax, CaminoEncontrado, ValorCaminoEncontrado)
         )
     ).
-adyacenteCamino(_Grid, _ElemInPos, _Pos,_PosAdy,_Condicion, _NumOfColumns,_NumOfRows, _ListaVisitados,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
+adyacenteCamino(_Grid, _ElemInPos, _Pos,_PosAdy,_Condicion, _NumOfColumns,_NumOfRows, _CaminoActual,CaminoMaximo,ValorCaminoMaximo,CaminoMaximo,ValorCaminoMaximo).
 
+
+/**
+ * buscarCamino(+Grid, +Elemento, +PosicionElemento, +NumOfColumns, +NumOfRows, +CaminoActual, +CaminoMaximo, +ValorCaminoMaximo, -CaminoEncontrado, -ValorCaminoEncontrado)
+ * CaminoActual es una lista que contiene el camino que esta siendo analizado actualmente
+ * CaminoMaximo contiene el camino con la sumatoria más grande encontrado hasta ahora
+ * ValorCaminoMax contiene dicha sumatoria
+ * CaminoEncontrado es el camino resultante que devolveremos cuando terminemos de recorrer todos los posibles caminos
+ * ValorCaminoEncontrado es el valor de dicho camino
+ * 
+ **/ 
 buscarCamino(Grid, ElemInPos, Pos,NumOfColumns,NumOfRows, ListaVisitados, CaminoMaximo,ValorCaminoMaximo ,CaminoEncontrado8,ValorCaminoEncontrado8) :-
     %Adyacente abajo izquierda
     PosAdyAbajoIzquierda is Pos+NumOfColumns-1,
@@ -410,27 +426,47 @@ buscarCamino(Grid, ElemInPos, Pos,NumOfColumns,NumOfRows, ListaVisitados, Camino
     PosAdyArribaDerecha is Pos-NumOfColumns+1,
     adyacenteCamino(Grid, ElemInPos, Pos,PosAdyArribaDerecha,filaArriba,NumOfColumns,NumOfRows,ListaVisitados,CaminoEncontrado7,ValorCaminoEncontrado7,CaminoEncontrado8,ValorCaminoEncontrado8).
 
-
+/**
+ * buscarCamino(+Grid, +GridAuxiliar, +PosicionElemento, +NumOfColumns, +NumOfRows, +MayorCamino, +MayorCaminoSumatoria)
+ * GridAuxiliar una copia de la grilla, la cual iremos reduciendo a medida que hagamos las llamadas recursivas, para no alterar la grilla original
+ * MayorCamino es una lista que contiene el mayor camino de todos los analizados
+ * MayorCaminoSumatoria es la sumatoria resultante de dicho camino
+ * 
+ **/ 
     mayorCaminoGrilla(Grid, [X|GrillaRestante], Indice, NumOfColumns,NumOfRows, MayorCamino, MayorCaminoSumatoria) :-
         IndiceAux is Indice + 1,
-        mayorCaminoGrilla(Grid, GrillaRestante, IndiceAux,NumOfColumns,NumOfRows, MayorCaminoGrilla, ValorMayorCaminoGrilla),
-        buscarCamino(Grid, X, Indice,NumOfColumns,NumOfRows,[Indice], [Indice], 0, MayorCaminoPos, ValorCaminoPos),
-        (   ValorCaminoPos >= ValorMayorCaminoGrilla,
-            MayorCamino = MayorCaminoPos,
-            MayorCaminoSumatoria = ValorCaminoPos
+        mayorCaminoGrilla(Grid, GrillaRestante, IndiceAux,NumOfColumns,NumOfRows, MayorCaminoAux, ValorMayorCaminoAux),
+        buscarCamino(Grid, X, Indice,NumOfColumns,NumOfRows,[Indice], [Indice], 0, MayorCaminoPosible, ValorCaminoPosible),
+        (   ValorCaminoPosible >= ValorMayorCaminoAux,
+            MayorCamino = MayorCaminoPosible,
+            MayorCaminoSumatoria = ValorCaminoPosible
         ;
-            MayorCamino = MayorCaminoGrilla,
-            MayorCaminoSumatoria = ValorMayorCaminoGrilla
+            MayorCamino = MayorCaminoAux,
+            MayorCaminoSumatoria = ValorMayorCaminoAux
         ).
     mayorCaminoGrilla(Grid, [X], Indice,NumOfColumns,NumOfRows, MayorCamino, ValorMayorCamino) :-
         buscarCamino(Grid, X, Indice,NumOfColumns,NumOfRows, [Indice], [Indice], 0, MayorCamino, ValorMayorCamino).
     
-pasarIndiceAPath(X,NumOfColumns,IndicePath):-IndiceColumna is  X mod NumOfColumns, IndiceFila is X // NumOfColumns,IndicePath=[IndiceFila,IndiceColumna]. 
+/**
+ * pasarIndiceAPath(+Indice, +NumOfColumns, -IndicePath)
+ * Indice es la posición de nuestro elemento
+ * Indice path es la posición de nuestro elemento pasada al formato adoptado por el Path. Por ejemplo, el elemento en la posicion 4, pasará a ser el [0,4]
+ **/ 
+pasarIndiceAPath(Indice,NumOfColumns,IndicePath):-IndiceColumna is  Indice mod NumOfColumns, IndiceFila is Indice // NumOfColumns,IndicePath=[IndiceFila,IndiceColumna]. 
 
+/**
+ * convertirCaminoAPath(+Camino, +NumOfColumns, -Path)
+ * Camino es la lista que contiene nuestro camino
+ * Path una lista de listas que contiene todas las posiciones de los elementos de nuestro camino con el formato [Fila, Columna]
+ **/ 
 convertirCaminoAPath([X|Sublist],NumOfColumns,Path):-convertirCaminoAPath(Sublist,NumOfColumns,PathRecursivo),pasarIndiceAPath(X,NumOfColumns,XaPath),Path=[XaPath|PathRecursivo].
 convertirCaminoAPath([X],NumOfColumns,[XaPath]):-pasarIndiceAPath(X,NumOfColumns,XaPath).
 
 
+/**
+ * ayudaMovidaMaxima(+Grid, +NumOfColumns, +NumOfRows, -Path)
+ * Path es nuestro camino convertido al formato adoptado para el Path
+ **/ 
 ayudaMovidaMaxima(Grid,NumOfColumns,NumOfRows,Path):-mayorCaminoGrilla(Grid,Grid,0,NumOfColumns,NumOfRows,MayorCamino,_ValorMayorCamino),reverse(MayorCamino,MayorCaminoEnOrden),convertirCaminoAPath(MayorCaminoEnOrden,NumOfColumns,Path).
 
 
