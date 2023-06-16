@@ -493,7 +493,9 @@ adyacenteCaminoParaMAdyacentesIguales(Grid, ElemInPos, Pos,PosAdy,Condicion, Num
     not(member(PosAdy, CaminoActual)),
     nth0(PosAdy, Grid, Achequear),
     cumpleCondicionesCamino(Achequear,ElemInPos,CaminoActual),call(Condicion,Pos,PosAdy),
+    max_list(Grid, MaximoElemento),
     calcularSuma(Grid, [PosAdy|CaminoActual], ResSuma),
+    ResSuma=<MaximoElemento,
     (
         (
             ResSuma >= ValorCaminoMax,
@@ -554,7 +556,7 @@ mayorCaminoGrillaParaMAdyacentesIguales(Grid, [X|GrillaRestante], Indice, NumOfC
     mayorCaminoGrillaParaMAdyacentesIguales(Grid, GrillaRestante, IndiceAux, NumOfColumns, NumOfRows, MayorCaminoGrilla, ValorMayorCaminoGrilla),
     buscarCaminoMAdyacentesIguales(Grid, X, Indice, NumOfColumns, NumOfRows, [Indice], [Indice], 0, MayorCaminoPos, ValorCaminoPos),
     (
-        (
+        (  
             ValorCaminoPos >= ValorMayorCaminoGrilla,
             MayorCamino = MayorCaminoPos,
             MayorCaminoSumatoria = ValorCaminoPos

@@ -6,6 +6,7 @@ import Marker from './marker';
 import Button from './Button';
 import imagenColapsarIguales from "./Assets/PowerUp.png"
 import imagenAyudaMovidaMaxima from "./Assets/ayudaMovidaMaxima.png"
+import imagenMaximosIgualesAdyacentes from "./Assets/ayudaMaximosIgualesAdyacentes.png"
 
 let pengine;
 
@@ -92,23 +93,22 @@ function Game() {
           
         const gridS = JSON.stringify(grid);
         const queryS = "ayudaMovidaMaxima(" + gridS + ","+numOfColumns+","+numOfRows+", Path)";
-       
+        if(!btn_ColapsarIguales){
         setWaiting(true);
-        
+        setEstadoBtnAyudaMovidaMaxima(true);
         
         pengine.query(queryS, (success, response) => {
-          if (success) {
-            setEstadoBtnAyudaMovidaMaxima(true);
+          if (success && response['Path'].length>1) {
             onPathChange(response['Path']);
+            setWaiting(false);
             setEstadoBtnAyudaMovidaMaxima(false);
           } else {
             setWaiting(false);
             setEstadoBtnAyudaMovidaMaxima(false);
           }
          
-        });
-        
-        
+        }); 
+      }
 
   }
 
@@ -128,22 +128,25 @@ function Game() {
           NumOfColumns,NumOfRows,Path
         ).
     */
-          
+   
         const gridS = JSON.stringify(grid);
         const queryS = "ayudaMaximosIgualesAdyacentes(" + gridS + ","+numOfColumns+","+numOfRows+", Path)";
-        setWaiting(true);
-        setEstadoBtnAyudaMaximosIgualesAdyacentes(true);
-        pengine.query(queryS, (success, response) => {
-          if (success) {
-            onPathChange(response['Path']);
-            setWaiting(false);
-            setEstadoBtnAyudaMaximosIgualesAdyacentes(false);
-          } else {
-            setWaiting(false);
-            setEstadoBtnAyudaMaximosIgualesAdyacentes(false);
-          }
-         
-        });
+        if(!btn_ColapsarIguales){
+          setWaiting(true);
+          setEstadoBtnAyudaMaximosIgualesAdyacentes(true);
+          pengine.query(queryS, (success, response) => {
+            
+              if (success && response['Path'].length>1) {
+                onPathChange(response['Path']);
+                setWaiting(false);
+                setEstadoBtnAyudaMaximosIgualesAdyacentes(false);
+              } else {
+                setWaiting(false);
+                setEstadoBtnAyudaMaximosIgualesAdyacentes(false);
+              }
+            
+          });
+        }
     }
 
 
@@ -179,9 +182,10 @@ function Game() {
         
         
         pengine.query(queryS, (success, response) => {
-          if (success) {
+          if (success && path.length===0) {
             setEstadoBtnColapsarIguales(true);
             animateEffect(response['RGrids']);
+            setWaiting(false)
           } else {
             setWaiting(false);
             setEstadoBtnColapsarIguales(false);
@@ -270,26 +274,29 @@ function Game() {
         onPathChange={onPathChange}
         onDone={onPathDone}
       />
-      <Button
-        className={"ColapsarIguales"}
-        Text={"Colapsar Iguales"}
-        Estado={btn_ColapsarIguales}
-        rutaImagen={imagenColapsarIguales}
-        onClickEvent={booster}
-      />
-      <Button
-        className={"AyudaMovidaMaxima"}
-        Text={"Ayuda Movida Maxima"}
-        rutaImagen={imagenAyudaMovidaMaxima}
-        Estado={btn_AyudaMovidaMaxima}
-        onClickEvent={AyudaMovidaMaxima}
-      />
-      <Button
-        className={"AyudaMaximosIguales"}
-        Text={"Ayuda máximos iguales adyacentes"}
-        rutaImagen={imagenAyudaMovidaMaxima}
-        onClickEvent={AyudaMaximosIgualesAdyacentes}
-      />
+        <div className="ContenedorBotones">
+        <Button
+          className={"ColapsarIguales"}
+          Text={"Colapsar Iguales"}
+          Estado={btn_ColapsarIguales}
+          rutaImagen={imagenColapsarIguales}
+          onClickEvent={booster}
+        />
+        <Button
+          className={"AyudaMovidaMaxima"}
+          Text={"Ayuda Movida Maxima"}
+          rutaImagen={imagenAyudaMovidaMaxima}
+          Estado={btn_AyudaMovidaMaxima}
+          onClickEvent={AyudaMovidaMaxima}
+        />
+        <Button
+          className={"AyudaMaximosIguales"}
+          Text={"Ayuda máximos iguales adyacentes"}
+          Estado={btn_AyudaMaximosIgualesAdyacentes}
+          rutaImagen={imagenMaximosIgualesAdyacentes}
+          onClickEvent={AyudaMaximosIgualesAdyacentes}
+        />
+      </div>
     </div>
 
   );
